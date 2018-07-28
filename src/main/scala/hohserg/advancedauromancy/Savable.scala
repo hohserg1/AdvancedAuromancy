@@ -24,31 +24,27 @@ object Savable{
 
 
   class WorldListener{
-    private def saveAll[A:Named](list:ListBuffer[A]): Unit ={
-      for (i <- list) {
-        val oos = new ObjectOutputStream(new FileOutputStream("./saveble/" + implicitly[Named[A]].name(i)))
-        oos.writeObject(i)
-        oos.close()
-      }
 
-    }
     @SubscribeEvent
     def onSave(e:WorldEvent.Save): Unit ={
       if(e.getWorld.provider.getDimensionType == DimensionType.OVERWORLD)
         try {
           new File("./saveble/").mkdirs()
-          saveAll(listeners)
-          saveAll(openListeners)
+          for (i <- listeners) {
+            val oos = new ObjectOutputStream(new FileOutputStream("./saveble/" + i.name))
+            oos.writeObject(i)
+            oos.close()
+          }
+          for (i <- openListeners) {
+            val oos = new ObjectOutputStream(new FileOutputStream("./saveble/" + i.name))
+            oos.writeObject(i.toMap)
+            oos.close()
+          }
         }catch {
           case e:Exception=>e.printStackTrace()
         }
     }
   }
-
-  trait Named[A]{def name(a:A):String}
-  implicit val namedSavable=new Named[Savable[_]] {override def name(a: Savable[_]): String = a.name}
-  implicit val namedOpenSavable=new Named[OpenSavable[_,_]] {override def name(a: OpenSavable[_,_]): String = a.name}
-
 }
 
 trait OpenSavable[A,B] {
