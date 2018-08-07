@@ -23,13 +23,13 @@ public class HookContainerParser {
     Ключ - номер параметра, значение - номер локальной переменной для перехвата
     или -1 для перехвата значения наверху стека.
      */
-    private HashMap<Integer, Integer> parameterAnnotations = new HashMap<Integer, Integer>();
+    private HashMap<Integer, Integer> parameterAnnotations = new HashMap<>();
 
     private boolean inHookAnnotation;
 
     private static final String HOOK_DESC = Type.getDescriptor(Hook.class);
     private static final String LOCAL_DESC = Type.getDescriptor(Hook.LocalVariable.class);
-    private static final String RETURN_DESC = Type.getDescriptor(ReturnValue.class);
+    private static final String RETURN_DESC = Type.getDescriptor(Hook.ReturnValue.class);
 
     public HookContainerParser(HookClassTransformer transformer) {
         this.transformer = transformer;
@@ -114,6 +114,10 @@ public class HookContainerParser {
             builder.setInjectorFactory(new HookInjectorFactory.LineNumber(line));
         }
 
+        if (annotationValues.containsKey("at")) {
+            builder.setAnchorForInject((HashMap<String, Object>) annotationValues.get("at"));
+        }
+
         if (annotationValues.containsKey("returnType")) {
             builder.setTargetMethodReturnType((String) annotationValues.get("returnType"));
         }
@@ -127,15 +131,15 @@ public class HookContainerParser {
         if (returnCondition != ReturnCondition.NEVER) {
             Object primitiveConstant = getPrimitiveConstant();
             if (primitiveConstant != null) {
-                builder.setReturnValue(ReturnValue.PRIMITIVE_CONSTANT);
+                builder.setReturnValue(hohserg.advancedauromancy.hooklib.asm.ReturnValue.PRIMITIVE_CONSTANT);
                 builder.setPrimitiveConstant(primitiveConstant);
             } else if (Boolean.TRUE.equals(annotationValues.get("returnNull"))) {
-                builder.setReturnValue(ReturnValue.NULL);
+                builder.setReturnValue(hohserg.advancedauromancy.hooklib.asm.ReturnValue.NULL);
             } else if (annotationValues.containsKey("returnAnotherMethod")) {
-                builder.setReturnValue(ReturnValue.ANOTHER_METHOD_RETURN_VALUE);
+                builder.setReturnValue(hohserg.advancedauromancy.hooklib.asm.ReturnValue.ANOTHER_METHOD_RETURN_VALUE);
                 builder.setReturnMethod((String) annotationValues.get("returnAnotherMethod"));
             } else if (methodType.getReturnType() != Type.VOID_TYPE) {
-                builder.setReturnValue(ReturnValue.HOOK_RETURN_VALUE);
+                builder.setReturnValue(hohserg.advancedauromancy.hooklib.asm.ReturnValue.HOOK_RETURN_VALUE);
             }
         }
 
@@ -206,14 +210,14 @@ public class HookContainerParser {
         @Override
         public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
             if (HOOK_DESC.equals(desc)) {
-                annotationValues = new HashMap<String, Object>();
+                annotationValues = new HashMap<>();
                 inHookAnnotation = true;
             }
             return new HookAnnotationVisitor();
         }
 
         @Override
-        public AnnotationVisitor visitParameterAnnotation(final int parameter, String desc, boolean visible) {
+        public AnnotationVisitor visitParameterAnnotation(int parameter, String desc, boolean visible) {
             if (RETURN_DESC.equals(desc)) {
                 parameterAnnotations.put(parameter, -1);
             }
@@ -251,6 +255,29 @@ public class HookContainerParser {
             if (inHookAnnotation) {
                 annotationValues.put(name, value);
             }
+        }
+
+        /**
+         * Вложенные аннотации
+         */
+
+        @Override
+        public AnnotationVisitor visitAnnotation(String name, String desc) {
+            if (inHookAnnotation) {
+                annotationValues.put(name, new HashMap<String, Object>());
+                return new AnnotationVisitor(Opcodes.ASM5) {
+                    @Override
+                    public void visit(String name1, Object value) {
+                        ((HashMap<String, Object>) annotationValues.get(name)).put(name1, value);
+                    }
+
+                    @Override
+                    public void visitEnum(String name1, String desc, String value) {
+                        ((HashMap<String, Object>) annotationValues.get(name)).put(name1, value);
+                    }
+                };
+            } else
+                return null;
         }
 
         @Override

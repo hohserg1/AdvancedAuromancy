@@ -6,7 +6,9 @@ import net.minecraft.launchwrapper.LaunchClassLoader;
 
 public class SecondaryTransformerHook {
 
-
+    /**
+     * Регистрирует хук-трансформер последним.
+     */
     @Hook
     public static void injectData(Loader loader, Object... data) {
         ClassLoader classLoader = SecondaryTransformerHook.class.getClassLoader();

@@ -1,13 +1,17 @@
 package hohserg.advancedauromancy.hooklib.minecraft;
 
 import hohserg.advancedauromancy.hooklib.asm.AsmHook;
+import net.minecraftforge.fml.common.asm.transformers.DeobfuscationTransformer;
 import hohserg.advancedauromancy.hooklib.asm.ClassMetadataReader;
 import hohserg.advancedauromancy.hooklib.asm.HookClassTransformer;
-import net.minecraftforge.fml.common.asm.transformers.DeobfuscationTransformer;
 import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
 
 import java.util.Map;
 
+/**
+ * Удобная базовая реализация IFMLLoadingPlugin для использования HookLib.
+ * Регистрировать хуки и контейнеры нужно в registerHooks().
+ */
 public abstract class HookLoader implements IFMLLoadingPlugin {
 
     static DeobfuscationTransformer deobfuscationTransformer;
@@ -26,11 +30,16 @@ public abstract class HookLoader implements IFMLLoadingPlugin {
                 MinecraftClassTransformer.instance : PrimaryClassTransformer.instance;
     }
 
+    /**
+     * Регистрирует вручную созданный хук
+     */
     public static void registerHook(AsmHook hook) {
         getTransformer().registerHook(hook);
     }
 
-
+    /**
+     * Деобфусцирует класс с хуками и регистрирует хуки из него
+     */
     public static void registerHookContainer(String className) {
         getTransformer().registerHookContainer(className);
     }
@@ -49,22 +58,22 @@ public abstract class HookLoader implements IFMLLoadingPlugin {
         return null;
     }
 
-
+    @Override
     public String[] getASMTransformerClass() {
         return null;
     }
 
-
+    @Override
     public String getModContainerClass() {
         return null;
     }
 
-
+    @Override
     public String getSetupClass() {
         return null;
     }
 
-
+    @Override
     public void injectData(Map<String, Object> data) {
         registerHooks();
     }

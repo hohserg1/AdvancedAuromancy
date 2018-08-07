@@ -8,7 +8,12 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 
-
+/**
+ * Позволяет при помощи велосипеда из костылей искать методы внутри незагруженных классов
+ * и общие суперклассы для чего угодно. Работает через поиск class-файлов в classpath, и, в случае провала -
+ * ищет через рефлексию. Для работы с майнкрафтом используется сабкласс под названием DeobfuscationMetadataReader,
+ *
+ */
 public class ClassMetadataReader {
     private static Method m;
 
@@ -137,7 +142,7 @@ public class ClassMetadataReader {
             super(Opcodes.ASM5);
         }
 
-
+        @Override
         public void visit(int version, int access, String name, String signature,
                           String superName, String[] interfaces) {
             this.superClassName = superName;
@@ -156,7 +161,7 @@ public class ClassMetadataReader {
             this.targetDesc = desc;
         }
 
-
+        @Override
         public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
             System.out.println("visiting " + name + "#" + desc);
             if ((access & Opcodes.ACC_PRIVATE) == 0 && checkSameMethod(name, desc, targetName, targetDesc)) {
@@ -184,7 +189,7 @@ public class ClassMetadataReader {
             return Type.getMethodType(desc);
         }
 
-         public String toString() {
+        @Override public String toString() {
             return "MethodReference{" +
                     "owner='" + owner + '\'' +
                     ", name='" + name + '\'' +

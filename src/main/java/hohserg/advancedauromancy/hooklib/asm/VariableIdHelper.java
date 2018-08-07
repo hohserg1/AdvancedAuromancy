@@ -17,12 +17,12 @@ public class VariableIdHelper {
 
         ClassVisitor cv = new ClassVisitor(Opcodes.ASM5) {
 
-
+            @Override
             public MethodVisitor visitMethod(final int acc, String name, String desc,
                                              String signature, String[] exceptions) {
                 if (methodName.equals(name) && desc.startsWith(methodDescWithoutReturnType)) {
                     return new MethodVisitor(Opcodes.ASM5) {
-
+                        @Override
                         public void visitLocalVariable(String name, String desc,
                                                        String signature, Label start, Label end, int index) {
                             String typeName = Type.getType(desc).getClassName();

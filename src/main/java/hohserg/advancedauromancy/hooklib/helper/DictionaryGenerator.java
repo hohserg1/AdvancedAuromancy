@@ -9,6 +9,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Генерирует из mcp-шного methods.csv словарь с названиями методов для хуклибы.
+ * Файл methods.csv лежит в mcp/conf/
+ *
+ * Настоятельно рекомендую сгенерировать methods.bin самостоятельно для своей версии mcp, иначе могут быть
+ * внезапные ошибки уровня "can not find target method of hook".
+ */
 public class DictionaryGenerator {
 
     public static void main(String[] args) throws Exception {

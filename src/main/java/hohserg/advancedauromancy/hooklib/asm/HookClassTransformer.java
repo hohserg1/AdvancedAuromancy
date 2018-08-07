@@ -1,6 +1,5 @@
 package hohserg.advancedauromancy.hooklib.asm;
 
-import hohserg.advancedauromancy.hooklib.asm.HookLogger.SystemOutLogger;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
@@ -11,7 +10,7 @@ import java.util.List;
 
 public class HookClassTransformer {
 
-    public HookLogger logger = new SystemOutLogger();
+    public HookLogger logger = new HookLogger.SystemOutLogger();
     protected HashMap<String, List<AsmHook>> hooksMap = new HashMap<String, List<AsmHook>>();
     private HookContainerParser containerParser = new HookContainerParser(this);
     protected ClassMetadataReader classMetadataReader = new ClassMetadataReader();
@@ -41,7 +40,12 @@ public class HookClassTransformer {
             Collections.sort(hooks);
             logger.debug("Injecting hooks into class " + className);
             try {
-
+                /*
+                 Начиная с седьмой версии джавы, сильно изменился процесс верификации байткода.
+                 Ради этого приходится включать автоматическую генерацию stack map frame'ов.
+                 На более старых версиях байткода это лишняя трата времени.
+                 Подробнее здесь: http://stackoverflow.com/questions/25109942
+                */
                 int majorVersion = ((bytecode[6] & 0xFF) << 8) | (bytecode[7] & 0xFF);
                 boolean java7 = majorVersion > 50;
 
@@ -75,12 +79,29 @@ public class HookClassTransformer {
         return bytecode;
     }
 
-
+    /**
+     * Создает ClassVisitor для списка хуков.
+     * Метод можно переопределить, если в ClassVisitor'e нужна своя логика для проверки,
+     * является ли метод целевым (isTargetMethod())
+     *
+     * @param cw    ClassWriter, который должен стоять в цепочке после этого ClassVisitor'a
+     * @param hooks Список хуков, вставляемых в класс
+     * @return ClassVisitor, добавляющий хуки
+     */
     protected HookInjectorClassVisitor createInjectorClassVisitor(ClassWriter cw, List<AsmHook> hooks) {
         return new HookInjectorClassVisitor(this, cw, hooks);
     }
 
-
+    /**
+     * Создает ClassWriter для сохранения трансформированного класса.
+     * Метод можно переопределить, если в ClassWriter'e нужна своя реализация метода getCommonSuperClass().
+     * Стандартная реализация работает для уже загруженных классов и для классов, .class файлы которых есть
+     * в classpath, но они ещё не загружены. Во втором случае происходит загрузка (но не инициализация) классов.
+     * Если загрузка классов является проблемой, то можно воспользоваться SafeClassWriter.
+     *
+     * @param flags Список флагов, которые нужно передать в конструктор ClassWriter'a
+     * @return ClassWriter, сохраняющий трансформированный класс
+     */
     protected ClassWriter createClassWriter(int flags) {
         return new SafeClassWriter(classMetadataReader, flags);
     }

@@ -1,13 +1,16 @@
 package hohserg.advancedauromancy.hooklib.minecraft;
 
 import hohserg.advancedauromancy.hooklib.asm.ClassMetadataReader;
-import net.minecraftforge.fml.common.asm.transformers.deobf.FMLDeobfuscatingRemapper;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.launchwrapper.LaunchClassLoader;
+import net.minecraftforge.fml.common.asm.transformers.deobf.FMLDeobfuscatingRemapper;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
 
+/**
+ * Еще больше костылей вдобавок к ClassMetadataReader для работы с майновской обфускацией.
+ */
 public class DeobfuscationMetadataReader extends ClassMetadataReader {
 
     private static Method runTransformers;
@@ -22,13 +25,13 @@ public class DeobfuscationMetadataReader extends ClassMetadataReader {
         }
     }
 
-
+    @Override
     public byte[] getClassData(String className) throws IOException {
         byte[] bytes = super.getClassData(unmap(className.replace('.', '/')));
         return deobfuscateClass(className, bytes);
     }
 
-
+    @Override
     protected boolean checkSameMethod(String sourceName, String sourceDesc, String targetName, String targetDesc) {
         return checkSameMethod(sourceName, targetName) && sourceDesc.equals(targetDesc);
     }
@@ -37,7 +40,7 @@ public class DeobfuscationMetadataReader extends ClassMetadataReader {
     // Для этого приходится применять трансформеры во время поиска супер-методов
     // этот метод должен вызываться только во время загрузки сабклассов проверяемого класса,
     // так что все должно быть норм
-
+    @Override
     protected MethodReference getMethodReferenceASM(String type, String methodName, String desc) throws IOException {
         FindMethodClassVisitor cv = new FindMethodClassVisitor(methodName, desc);
         byte[] bytes = getTransformedBytes(type);

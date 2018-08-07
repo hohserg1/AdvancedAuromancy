@@ -15,7 +15,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
+/**
+ * Этот трансформер занимается вставкой хуков с момента запуска майнкрафта. Здесь сосредоточены все костыли,
+ * которые необходимы для правильной работы с обфусцированными названиями методов.
+ */
 public class MinecraftClassTransformer extends HookClassTransformer implements IClassTransformer {
 
     static MinecraftClassTransformer instance;
@@ -57,7 +60,7 @@ public class MinecraftClassTransformer extends HookClassTransformer implements I
         return map;
     }
 
-
+    @Override
     public byte[] transform(String oldName, String newName, byte[] bytecode) {
         bytecode = transform(newName, bytecode);
         for (int i = 0; i < postTransformers.size(); i++) {
@@ -66,10 +69,10 @@ public class MinecraftClassTransformer extends HookClassTransformer implements I
         return bytecode;
     }
 
-
+    @Override
     protected HookInjectorClassVisitor createInjectorClassVisitor(ClassWriter cw, List<AsmHook> hooks) {
         return new HookInjectorClassVisitor(this, cw, hooks) {
-
+            @Override
             protected boolean isTargetMethod(AsmHook hook, String name, String desc) {
                 if (HookLibPlugin.getObfuscated()) {
                     String mcpName = methodNames.get(getMethodId(name));
@@ -96,6 +99,9 @@ public class MinecraftClassTransformer extends HookClassTransformer implements I
         }
     }
 
+    /**
+     * Регистрирует трансформер, который будет запущен после обычных, и в том числе после деобфусцирующего трансформера.
+     */
     public static void registerPostTransformer(IClassTransformer transformer) {
         postTransformers.add(transformer);
     }

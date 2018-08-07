@@ -23,13 +23,13 @@ public class HookInjectorClassVisitor extends ClassVisitor {
         this.transformer = transformer;
     }
 
-     public void visit(int version, int access, String name,
+    @Override public void visit(int version, int access, String name,
                                 String signature, String superName, String[] interfaces) {
         this.superName = superName;
         super.visit(version, access, name, signature, superName, interfaces);
     }
 
-
+    @Override
     public MethodVisitor visitMethod(int access, String name, String desc,
                                      String signature, String[] exceptions) {
         MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
@@ -43,7 +43,7 @@ public class HookInjectorClassVisitor extends ClassVisitor {
         return mv;
     }
 
-
+    @Override
     public void visitEnd() {
         for (AsmHook hook : hooks) {
             if (hook.getCreateMethod() && !injectedHooks.contains(hook)) {

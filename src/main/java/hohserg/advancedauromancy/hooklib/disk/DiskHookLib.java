@@ -24,11 +24,13 @@ public class DiskHookLib {
         HookClassTransformer transformer = new HookClassTransformer();
         for (File file : getFiles(".class", hooksDir)) {
             transformer.registerHookContainer(FileUtils.readFileToByteArray(file));
+            // теперь file надо скопировать в transformedDir, сохранив путь
         }
         for (File file : getFiles(".class", untransformedDir)) {
             byte[] bytes = IOUtils.toByteArray(new FileInputStream(file));
-            String className = "";
+            String className = ""; //нужно из пути получить название класса через точки вроде ru.lol.DatClass
             byte[] newBytes = transformer.transform(className, bytes);
+            // надо закинуть файл, состоящий из newBytes в transformedDir, сохранив путь
         }
     }
 
