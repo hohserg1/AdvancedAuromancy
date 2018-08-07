@@ -1,4 +1,4 @@
-package hohserg.advancedauromancy.client.render
+package hohserg.advancedauromancy.client
 
 import hohserg.advancedauromancy.items.base.Wand
 import net.minecraftforge.event.entity.player.ItemTooltipEvent
