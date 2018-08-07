@@ -31,6 +31,8 @@ object RodsAndCaps{
 
     testUpgrade
 
+    WandRod.register(100, "GreatwoodRod",0,identityOnUpdate,new ResourceLocation(advancedAuromancyModId+":rods_and_caps/wand_rod_greatwood"))
+
     WandRod.register(100, "SilverwoodRod",0,identityOnUpdate,new ResourceLocation(advancedAuromancyModId+":rods_and_caps/wand_rod_silverwood"))
 
     DefaultCap
