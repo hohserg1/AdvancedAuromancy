@@ -1,0 +1,6 @@
+{
+    "variants": {
+        "normal": { "model": "advancedauromancy:blockwandbuilder" },
+        "inventory": { "model": "advancedauromancy:blockwandbuilder" }
+    }
+}
