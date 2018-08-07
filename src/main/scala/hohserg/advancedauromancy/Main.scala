@@ -1,7 +1,10 @@
 package hohserg.advancedauromancy
 
-import hohserg.advancedauromancy.client.ModelProvider
-import hohserg.advancedauromancy.client.render.{ClientEventHandler, TooltipHandler}
+import hohserg.advancedauromancy.blocks.BlockWandBuilder.TileWandBuilder
+import hohserg.advancedauromancy.blocks._
+import hohserg.advancedauromancy.client.render.TileWandBuilderSpecialRenderer
+import hohserg.advancedauromancy.client.{ClientEventHandler, ModelProvider, ShaderEventHandler, TooltipHandler}
+import hohserg.advancedauromancy.inventory.{ContainerWandBuilder, GuiWandBuilder}
 import hohserg.advancedauromancy.items._
 import hohserg.advancedauromancy.wands.RodsAndCaps
 import net.minecraft.block.{Block, BlockContainer}
@@ -12,9 +15,11 @@ import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.init.Items
 import net.minecraft.item.{Item, ItemBlock, ItemStack}
 import net.minecraft.util.ResourceLocation
+import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 import net.minecraftforge.client.model.ModelLoader
 import net.minecraftforge.common.MinecraftForge
+import net.minecraftforge.fml.client.registry.ClientRegistry
 import net.minecraftforge.fml.common.event.{FMLInitializationEvent, FMLPostInitializationEvent, FMLPreInitializationEvent}
 import net.minecraftforge.fml.common.network.{IGuiHandler, NetworkRegistry}
 import net.minecraftforge.fml.common.registry.{ForgeRegistries, GameRegistry}
@@ -54,9 +59,11 @@ class ClientProxy extends CommonProxy{
     super.preinit(event)
     MinecraftForge.EVENT_BUS.register(new ClientEventHandler)
     MinecraftForge.EVENT_BUS.register(new TooltipHandler)
+    MinecraftForge.EVENT_BUS.register(new ShaderEventHandler)
   }
   override def init(event: FMLInitializationEvent): Unit = {
     super.init(event)
+    //println("test",handler.programID)
     items.foreach {
       case item: Item with ModelProvider =>
         val model = item.location
@@ -66,9 +73,18 @@ class ClientProxy extends CommonProxy{
         val model = new ModelResourceLocation(item.getRegistryName, "inventory")
         Minecraft.getMinecraft.getRenderItem.getItemModelMesher.register(item, 0, model)
         ModelLoader.setCustomModelResourceLocation(item, 0, model)
-
     }
+    blocks.foreach (
+      block => {
+        val model = new ModelResourceLocation(block.getRegistryName, "inventory")
+        println(model)
+        Minecraft.getMinecraft.getRenderItem.getItemModelMesher.register(Item.getItemFromBlock(block), 0, model)
+        ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(block), 0, model)
+      }
+    )
+    ClientRegistry.bindTileEntitySpecialRenderer(classOf[BlockWandBuilder.TileWandBuilder], new TileWandBuilderSpecialRenderer)
   }
+
 }
 
 class CommonProxy extends IGuiHandler{
@@ -78,7 +94,7 @@ class CommonProxy extends IGuiHandler{
 
   import Main._
 
-  protected val blocks=Array[Block]()
+  protected val blocks=Array[Block](BlockWandBuilder)
   protected val items=Array[Item](ItemWandCasting)
 
   def preinit(event: FMLPreInitializationEvent): Unit = {
@@ -117,15 +133,22 @@ class CommonProxy extends IGuiHandler{
     )
     ThaumcraftApi.registerResearchLocation(new ResourceLocation(Main.advancedAuromancyModId, "research/research.json"))
 
-  }
 
+  }
   override def getClientGuiElement(ID: Int, player: EntityPlayer, world: World, x: Int, y: Int, z: Int): AnyRef = ID match{
-    case 0=>null
+    case 0=>tile(world, x, y, z)
+      .map(tile => new GuiWandBuilder(new ContainerWandBuilder(player, tile))).orNull
 
   }
 
   override def getServerGuiElement(ID: Int, player: EntityPlayer, world: World, x: Int, y: Int, z: Int): AnyRef = ID match{
-    case 0=>null
+    case 0=>tile(world, x, y, z)
+      .map(new ContainerWandBuilder(player, _)).orNull
 
+  }
+
+  private def tile(world: World, x: Int, y: Int, z: Int): Option[TileWandBuilder] = {
+    Option(world.getTileEntity(new BlockPos(x, y, z)))
+      .collect({ case tile: TileWandBuilder => tile })
   }
 }
