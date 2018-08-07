@@ -1,6 +1,5 @@
 package hohserg.advancedauromancy.items.base
 
-import hohserg.advancedauromancy.nbt.Nbt
 import hohserg.advancedauromancy.nbt.Nbt._
 import hohserg.advancedauromancy.wands._
 import net.minecraft.entity.player.EntityPlayer
@@ -14,7 +13,7 @@ import thaumcraft.common.items.casters.{CasterManager, ItemCaster, ItemFocus}
 abstract class Wand(i:String) extends ItemCaster(i,0) with IRechargable {
   ConfigItems.ITEM_VARIANT_HOLDERS.remove(this)
 
-  def getUpgrades(is: ItemStack):List[WandUpgrade] = is.getTagCompound.getList("upgrades").flatMap(WandUpgrade.apply)
+  def getUpgrades(is: ItemStack):List[WandUpgrade] = is.getTagCompound.getList("upgrades").flatMap(WandUpgrade.apply(_))
 
 
   override def onUpdate(is: ItemStack, w: World, e: Entity, slot: Int, currentItem: Boolean): Unit = {
@@ -46,9 +45,9 @@ abstract class Wand(i:String) extends ItemCaster(i,0) with IRechargable {
   def getFocusOption(stack: ItemStack): Option[ItemFocus] = Option(getFocus(stack))
 
 
-  def getCap(itemStack: ItemStack): WandCap = Nbt(itemStack.getTagCompound).getString("cap").flatMap(WandCap.apply).getOrElse(DefaultCap)
+  def getCap(itemStack: ItemStack): WandCap = itemStack.getString("cap").flatMap(WandCap.apply).getOrElse(DefaultCap)
 
-  def getRod(itemStack: ItemStack): WandRod = Nbt(itemStack.getTagCompound).getString("cap").flatMap(WandRod.apply).getOrElse(DefaultRod)
+  def getRod(itemStack: ItemStack): WandRod = itemStack.getString("cap").flatMap(WandRod.apply).getOrElse(DefaultRod)
 
   def getMaxCharge(itemStack: ItemStack, entityLivingBase: EntityLivingBase): Int = getMaxVis(itemStack) * 1000
 
