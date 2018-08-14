@@ -35,17 +35,17 @@ object Nbt {
     }
   private def matchElem(e:Any):NBTBase=
     e match {
-      case v:String=>new NBTTagString(v)
-      case v:Int=>new NBTTagInt(v)
-      case v:Float=>new NBTTagFloat(v)
-      case v:Long=>new NBTTagLong(v)
-      case v:Seq[_]=>v.foldLeft(new NBTTagList()){
+      case v:String => new NBTTagString(v)
+      case v:Int => new NBTTagInt(v)
+      case v:Float => new NBTTagFloat(v)
+      case v:Long => new NBTTagLong(v)
+      case v:Seq[_] => v.foldLeft(new NBTTagList()){
         case (acc,elem)=>
           acc.appendTag(matchElem(elem))
           acc
       }
       case v:Map[String,Any]=>map2Nbt(v)
-      case nbt:NBTBase=>nbt
+      case nbt:NBTBase => nbt
       //TODO: other NbtBase
     }
 
