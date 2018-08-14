@@ -17,4 +17,9 @@ class GuiWandBuilder(containerWandBuilder: ContainerWandBuilder) extends GuiCont
     mc.getTextureManager.bindTexture(background)
     this.drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize)
   }
+
+  override def drawScreen(mouseX: Int, mouseY: Int, partialTicks: Float): Unit = {
+    super.drawScreen(mouseX, mouseY, partialTicks)
+    renderHoveredToolTip(mouseX, mouseY)
+  }
 }

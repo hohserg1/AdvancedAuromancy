@@ -3,6 +3,7 @@ package hohserg.advancedauromancy.inventory
 import hohserg.advancedauromancy.blocks.BlockWandBuilder.TileWandBuilder
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.{Container, Slot}
+import net.minecraft.item.ItemStack
 
 class ContainerWandBuilder(player: EntityPlayer,tile:TileWandBuilder) extends Container{
 
@@ -34,4 +35,36 @@ class ContainerWandBuilder(player: EntityPlayer,tile:TileWandBuilder) extends Co
     addSlotToContainer(new Slot(player.inventory, i, 16 + i * 18, 209))
   
   override def canInteractWith(playerIn: EntityPlayer): Boolean = true
+
+  override def transferStackInSlot(playerIn: EntityPlayer, slotNumber: Int): ItemStack = {
+    import net.minecraft.item.ItemStack
+    var itemstack: ItemStack = ItemStack.EMPTY
+    val slot = inventorySlots.get(slotNumber)
+    if (slot != null && slot.getHasStack) {
+      val itemstack1: ItemStack = slot.getStack
+      itemstack = itemstack1.copy
+      if (slotNumber <= 13) {
+        if (!this.mergeItemStack(itemstack1, 14, 43, true)) {
+          ItemStack.EMPTY
+        }else {
+          slot.onSlotChange(itemstack1, itemstack)
+          ItemStack.EMPTY
+        }
+      } else if (slotNumber > 13) {
+        ItemStack.EMPTY
+      }else {
+        if (itemstack1.getCount == 0) {
+          slot.putStack(ItemStack.EMPTY)
+        }
+        else {
+          slot.onSlotChanged()
+          ItemStack.EMPTY
+        }
+        if (itemstack1.getCount == itemstack.getCount) {
+          ItemStack.EMPTY
+        } else
+          slot.onTake(playerIn, itemstack1)
+      }
+    } else ItemStack.EMPTY
+  }
 }
