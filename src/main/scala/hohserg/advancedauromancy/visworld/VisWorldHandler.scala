@@ -3,13 +3,25 @@ package hohserg.advancedauromancy.visworld
 import java.awt.Color
 
 import net.minecraft.block.state.IBlockState
+import net.minecraft.client.Minecraft
 import net.minecraft.item.{Item, ItemStack}
+import net.minecraftforge.client.event.RenderWorldLastEvent
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import thaumcraft.api.aspects.AspectHelper
 
 import scala.collection.JavaConverters._
 import scala.util.Try
 
 object VisWorldHandler {
+  class ClientHandler{
+    @SubscribeEvent
+    def onRenderWorld(e:RenderWorldLastEvent): Unit ={
+      val player=Minecraft.getMinecraft.player
+      //if(Seq(BaublesApi.getBaublesHandler(player).getStackInSlot().inventory.armorInventory.get(4)).exists(_.getItem==ItemSenseGoggles))
+
+    }
+
+  }
   def getColorOfBlock(block:IBlockState):Color={
     Try(new ItemStack(Item.getItemFromBlock(block.getBlock))).map(AspectHelper.getObjectAspects)
       .map(asl=>{
