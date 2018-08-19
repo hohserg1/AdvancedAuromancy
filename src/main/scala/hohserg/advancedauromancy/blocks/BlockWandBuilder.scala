@@ -94,7 +94,7 @@ object BlockWandBuilder extends BlockContainer(Material.ROCK){
       new SPacketUpdateTileEntity(pos, 3, tagCompound)
     }
 
-    def sendUpdates() = {
+    def sendUpdates(): Unit = {
         val packet = getUpdatePacket
         if (packet != null && world.isInstanceOf[WorldServer]) {
           val chunk = world.asInstanceOf[WorldServer].getPlayerChunkMap.getEntry(pos.getX >> 4, pos.getZ >> 4)
