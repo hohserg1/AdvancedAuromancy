@@ -3,7 +3,7 @@ package hohserg.advancedauromancy
 import hohserg.advancedauromancy.blocks.BlockWandBuilder.TileWandBuilder
 import hohserg.advancedauromancy.blocks._
 import hohserg.advancedauromancy.client.render.TileWandBuilderSpecialRenderer
-import hohserg.advancedauromancy.client.{ClientEventHandler, ModelProvider, ShaderEventHandler, TooltipHandler}
+import hohserg.advancedauromancy.client._
 import hohserg.advancedauromancy.inventory.{ContainerWandBuilder, GuiWandBuilder}
 import hohserg.advancedauromancy.items._
 import hohserg.advancedauromancy.visworld.VisWorldHandler
@@ -59,6 +59,7 @@ class ClientProxy extends CommonProxy{
   override def preinit(event: FMLPreInitializationEvent): Unit = {
     super.preinit(event)
     MinecraftForge.EVENT_BUS.register(new ClientEventHandler)
+    MinecraftForge.EVENT_BUS.register(new ResearchCatsEditor)
     MinecraftForge.EVENT_BUS.register(new VisWorldHandler.ClientHandler)
     MinecraftForge.EVENT_BUS.register(new TooltipHandler)
     MinecraftForge.EVENT_BUS.register(new ShaderEventHandler)
