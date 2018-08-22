@@ -3,7 +3,8 @@ package hohserg.advancedauromancy.blocks
 import hohserg.advancedauromancy.items.ItemWandCasting
 import hohserg.advancedauromancy.nbt.Nbt._
 import hohserg.advancedauromancy.wands._
-import hohserg.advancedauromancy.{ItemUtils, Main}
+import hohserg.advancedauromancy.Main
+import hohserg.advancedauromancy.utils.ItemUtils
 import net.minecraft.block.BlockContainer
 import net.minecraft.block.material.Material
 import net.minecraft.block.state.IBlockState
@@ -21,9 +22,6 @@ import net.minecraftforge.common.util.Constants
 import thaumcraft.common.items.casters.ItemCaster
 
 object BlockWandBuilder extends BlockContainer(Material.ROCK){
-  //override def isOpaqueCube(state: IBlockState) = false
-
-  //override def isFullCube(state: IBlockState) = false
 
   override def getRenderType(state: IBlockState) = EnumBlockRenderType.MODEL
 
