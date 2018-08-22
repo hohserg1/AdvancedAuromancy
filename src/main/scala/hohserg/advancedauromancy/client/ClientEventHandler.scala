@@ -1,5 +1,6 @@
 package hohserg.advancedauromancy.client
 
+import hohserg.advancedauromancy.client.render.simpleItem.{SimpleTexturedModelProvider, TexturedModel}
 import hohserg.advancedauromancy.client.render.wand.WandModel
 import hohserg.advancedauromancy.items.ItemWandCasting
 import net.minecraft.client.Minecraft
@@ -29,15 +30,21 @@ class ClientEventHandler extends GuiScreen{
   @SubscribeEvent
   def stitcherEventPre(event: TextureStitchEvent.Pre): Unit = ClientEventHandler.forRegister.foreach(event.getMap.registerSprite)
 
+  val modelWrappersMap=Map(
+    new ModelResourceLocation(ItemWandCasting.getRegistryName, "inventory")->{new WandModel(_)},
+    new SimpleTexturedModelProvider(){}.location->{new TexturedModel(_)}
+  )
+
 
   @SubscribeEvent def onModelBakeEvent(event: ModelBakeEvent): Unit = {
-    val model = new ModelResourceLocation(ItemWandCasting.getRegistryName, "inventory")
-    val `object` = event.getModelRegistry.getObject(model)
-    `object` match {
-      case existingModel: IBakedModel =>
-        val customModel = new WandModel(existingModel)
-        event.getModelRegistry.putObject(model, customModel)
-      case _ =>
+    modelWrappersMap.foreach{case (model,wrapper)=>
+      val `object` = event.getModelRegistry.getObject(model)
+      `object` match {
+        case existingModel: IBakedModel =>
+          val customModel = wrapper(existingModel)
+          event.getModelRegistry.putObject(model, customModel)
+        case _ =>
+      }
     }
   }
 }
