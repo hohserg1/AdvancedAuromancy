@@ -1,4 +1,4 @@
-package hohserg.advancedauromancy
+package hohserg.advancedauromancy.utils
 
 import net.minecraft.item.{Item, ItemStack}
 

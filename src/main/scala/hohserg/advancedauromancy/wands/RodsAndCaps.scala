@@ -11,14 +11,12 @@ import net.minecraft.client.renderer.block.model.BakedQuad
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.{Item, ItemStack}
 import net.minecraft.util.{EnumFacing, ResourceLocation}
-import net.minecraft.world.storage.loot.LootTable
 import net.minecraftforge.fml.common.registry.ForgeRegistries
 
 import scala.collection.mutable
 
 object RodsAndCaps{
   val identityOnUpdate: (ItemStack, EntityPlayer) => Unit = WandRod.identityOnUpdate
-  LootTable
   lazy val testUpgrade=WandUpgrade.register(0,1,"TestUpgrade",100,identityOnUpdate,new IBakedSource {
     override def getQuads(state: IBlockState, side: EnumFacing, rand: Long): util.List[BakedQuad] = util.Collections.emptyList()
   })
