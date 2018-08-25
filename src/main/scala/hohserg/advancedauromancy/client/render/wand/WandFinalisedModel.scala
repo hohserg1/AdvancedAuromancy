@@ -40,9 +40,9 @@ object WandFinalisedModel {
   private val textureCap = Minecraft.getMinecraft.getTextureMapBlocks.getAtlasSprite(DefaultCap.location.toString)
 
   val fl = 0.2f
-  private val cap1Builder = Cube(-1, -1, -1, 2, 2, 2, textureCap).scale(1.2f, 1, 1.2f).scale(fl).builder
-  private val cap2Builder = Cube(-1, -1, -1, 2, 2, 2, textureCap).scale(1.2f, 1, 1.2f).scale(fl).move(0, 20, 0).builder
-  private val rodBuilder = Cube(-1, -1, -1, 2, 18, 2, textureRod).scale(fl).move(0, 2, 0).builder
+  private def cap1Builder = Cube(-1, -1, -1, 2, 2, 2, textureCap).scale(1.2f, 1, 1.2f).scale(fl).builder
+  private def cap2Builder = Cube(-1, -1, -1, 2, 2, 2, textureCap).scale(1.2f, 1, 1.2f).scale(fl).move(0, 20, 0).builder
+  private def rodBuilder = Cube(-1, -1, -1, 2, 18, 2, textureRod).scale(fl).move(0, 2, 0).builder
 
   private def setTextureAndBuild(i: UnpackedBakedQuad.Builder)(implicit texture: TextureAtlasSprite) = {
     i.setTexture(texture)
