@@ -2,7 +2,6 @@ package hohserg.advancedauromancy.client.render
 
 import java.awt.Color
 
-import net.minecraft.client.renderer.block.model.BakedQuad
 import net.minecraft.client.renderer.texture.TextureAtlasSprite
 import net.minecraft.client.renderer.vertex.VertexFormat
 import net.minecraft.util.math.Vec3d
@@ -60,12 +59,12 @@ case class Cube(
 
   def extendedVectorScale(v1: Vec3d) = new Vec3d(v1.x*scaleX,v1.y*scaleY,v1.z*scaleZ)
 
-  private def createQuad1(v1: Vec3d, v2: Vec3d, v3: Vec3d, v4: Vec3d, sprite: TextureAtlasSprite, color:(Float,Float,Float)=color):UnpackedBakedQuad.Builder = {
+  private def createQuad1(v1: Vec3d, v2: Vec3d, v3: Vec3d, v4: Vec3d, sprite: TextureAtlasSprite, color:(Float,Float,Float)=color) = {
     val center = (cx*scaleX, cy*scaleY, cz*scaleZ)
     createQuad(extendedVectorScale(v1).add(center),extendedVectorScale(v2).add(center),extendedVectorScale(v3).add(center),extendedVectorScale(v4).add(center),sprite,color)
   }
 
-  private def createQuad(v1: Vec3d, v2: Vec3d, v3: Vec3d, v4: Vec3d, sprite: TextureAtlasSprite,color:(Float,Float,Float)=color):UnpackedBakedQuad.Builder = {
+  private def createQuad(v1: Vec3d, v2: Vec3d, v3: Vec3d, v4: Vec3d, sprite: TextureAtlasSprite,color:(Float,Float,Float)=color) = {
     val normal:Vec3d = v1.subtract(v2).crossProduct(v3.subtract(v2))
     val builder = new UnpackedBakedQuad.Builder(format)
     builder.setTexture(sprite)
@@ -73,7 +72,7 @@ case class Cube(
     putVertex(builder, normal, v2.x, v2.y, v2.z, 0, 16, sprite,color)
     putVertex(builder, normal, v3.x, v3.y, v3.z, 16, 16, sprite,color)
     putVertex(builder, normal, v4.x, v4.y, v4.z, 16, 0, sprite,color)
-    builder
+    builder.build()
   }
 
   def scale(sx:Float,sy:Float,sz:Float): Cube = copy(scaleX=scaleX*sx,scaleY=scaleY*sy,scaleZ=scaleZ*sz)
@@ -84,10 +83,7 @@ case class Cube(
 
   private val texture = textureAtlasSprite//Minecraft.getMinecraft.getTextureMapBlocks.getAtlasSprite(new ResourceLocation(advancedAuromancyModId+":items/wand_rod_silverwood").toString)
 
-  def toQuads: List[BakedQuad] =
-    builder.map(_.build())
-
-  def builder:List[UnpackedBakedQuad.Builder] =
+  def toQuads:List[UnpackedBakedQuad] =
     List(
       createQuad1((x, y, z), (x, y+h, z), (x+w, y+h, z), (x+w, y, z),texture),
       createQuad1((x, y, z), (x+w, y, z), (x+w, y, z+d), (x, y, z+d),texture),

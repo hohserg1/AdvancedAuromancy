@@ -36,19 +36,11 @@ object WandFinalisedModel {
 
   import collection.JavaConverters._
 
-  private val textureRod = Minecraft.getMinecraft.getTextureMapBlocks.getAtlasSprite(DefaultRod.location.toString)
-  private val textureCap = Minecraft.getMinecraft.getTextureMapBlocks.getAtlasSprite(DefaultCap.location.toString)
-
   val fl = 0.2f
-  private def cap1Builder = Cube(-1, -1, -1, 2, 2, 2, textureCap).scale(1.2f, 1, 1.2f).scale(fl).builder
-  private def cap2Builder = Cube(-1, -1, -1, 2, 2, 2, textureCap).scale(1.2f, 1, 1.2f).scale(fl).move(0, 20, 0).builder
-  private def rodBuilder = Cube(-1, -1, -1, 2, 18, 2, textureRod).scale(fl).move(0, 2, 0).builder
-  
+  private def cap1Builder(texture:TextureAtlasSprite) = Cube(-1, -1, -1, 2, 2, 2, texture).scale(1.2f, 1, 1.2f).scale(fl).toQuads
+  private def cap2Builder(texture:TextureAtlasSprite) = Cube(-1, -1, -1, 2, 2, 2, texture).scale(1.2f, 1, 1.2f).scale(fl).move(0, 20, 0).toQuads
+  private def rodBuilder(texture:TextureAtlasSprite) = Cube(-1, -1, -1, 2, 18, 2, texture).scale(fl).move(0, 2, 0).toQuads
 
-  private def setTextureAndBuild(i: UnpackedBakedQuad.Builder)(implicit texture: TextureAtlasSprite) = {
-    i.setTexture(texture)
-    i.build()
-  }
 
   type FocusType = Any //todo: focuses have different type, as simple, advanced, great, and would can have different textures
 
@@ -57,8 +49,8 @@ object WandFinalisedModel {
   val memoizationCap = new mutable.OpenHashMap[TextureAtlasSprite, java.util.List[UnpackedBakedQuad]]()
 
   def rod(implicit texture: TextureAtlasSprite): java.util.List[UnpackedBakedQuad] =
-    memoizationRod.getOrElseUpdate(texture, rodBuilder.map(setTextureAndBuild).asJava)
+    memoizationRod.getOrElseUpdate(texture, rodBuilder(texture).asJava)
 
   def cap(implicit texture: TextureAtlasSprite): java.util.List[UnpackedBakedQuad] =
-    memoizationCap.getOrElseUpdate(texture, (cap1Builder.map(setTextureAndBuild) ++ cap2Builder.map(setTextureAndBuild)).asJava)
+    memoizationCap.getOrElseUpdate(texture, (cap1Builder(texture)++cap2Builder(texture)).asJava)
 }
