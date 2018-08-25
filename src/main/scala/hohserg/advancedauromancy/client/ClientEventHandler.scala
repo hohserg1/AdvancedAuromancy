@@ -28,11 +28,16 @@ class ClientEventHandler extends GuiScreen{
     }
 
   @SubscribeEvent
-  def stitcherEventPre(event: TextureStitchEvent.Pre): Unit = ClientEventHandler.forRegister.foreach(event.getMap.registerSprite)
+  def stitcherEventPre(event: TextureStitchEvent.Pre): Unit = {
+    println(event.getMap==Minecraft.getMinecraft.getTextureMapBlocks)
+    ClientEventHandler.forRegister.foreach(event.getMap.registerSprite)
+    println(ClientEventHandler.forRegister)
+    println(event.getMap.getAtlasSprite(ClientEventHandler.forRegister.head.toString))
+  }
 
   val modelWrappersMap=Map(
     new ModelResourceLocation(ItemWandCasting.getRegistryName, "inventory")->{new WandModel(_)},
-    new SimpleTexturedModelProvider(){}.location->{new TexturedModel(_)}
+    SimpleTexturedModelProvider.defaultLocation->{new TexturedModel(_)}
   )
 
 
