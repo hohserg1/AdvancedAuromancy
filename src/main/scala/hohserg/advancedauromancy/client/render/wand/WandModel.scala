@@ -21,7 +21,7 @@ class WandModel(baseModel: IBakedModel) extends IBakedModel {
 
   override def getParticleTexture: TextureAtlasSprite = baseModel.getParticleTexture
 
-  override def getQuads(state: IBlockState, side: EnumFacing, rand: Long): util.List[BakedQuad] = baseModel.getQuads(state, side, rand)
+  override def getQuads(state: IBlockState, side: EnumFacing, rand: Long): util.List[BakedQuad] = Collections.emptyList()
 
   override def isAmbientOcclusion: Boolean = baseModel.isAmbientOcclusion
 
