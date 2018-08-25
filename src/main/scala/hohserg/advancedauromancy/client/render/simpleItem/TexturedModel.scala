@@ -3,7 +3,6 @@ package hohserg.advancedauromancy.client.render.simpleItem
 import java.util
 import java.util.Collections
 
-import hohserg.advancedauromancy.items.base.ItemSelfRegister
 import javax.vecmath.Matrix4f
 import net.minecraft.block.state.IBlockState
 import net.minecraft.client.renderer.block.model.{BakedQuad, IBakedModel, ItemCameraTransforms, ItemOverrideList}
@@ -42,8 +41,8 @@ class TexturedModel(baseModel: IBakedModel) extends IBakedModel {
 
     private def model(originalModel: IBakedModel, stack: ItemStack) = {
       stack.getItem match {
-        case item:ItemSelfRegister=>
-          val key=item.name
+        case item:SimpleTexturedModelProvider=>
+          val key=item.textureName
           memoization.getOrElseUpdate(key, new TexturedFinalisedModel(originalModel, key))
         case _=>originalModel
       }
