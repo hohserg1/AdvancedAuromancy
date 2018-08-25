@@ -53,6 +53,8 @@ trait IndexedElem{
   override def hashCode(): Int = name.hashCode
   def name: String = item.delegate.name().toString
 
+  override def toString: String = getClass.getSimpleName+" "+name
+
 }
 
 trait Indexed[A<:IndexedElem]{
@@ -66,7 +68,7 @@ object WandCap extends Indexed[WandCap]{
     new WandCap(discount, item, craftCost, resourceLocation)
 
   def register(discount:Float, name:String, craftCost:Int, resourceLocation: ResourceLocation):WandCap = {
-    val item=new ItemCap(name)
+    val item=new ItemCap(name.toLowerCase)
     new WandCap(discount, item, craftCost, resourceLocation)
   }
 }
@@ -77,13 +79,13 @@ object WandRod extends Indexed[WandRod]{
     new WandRod(capacity, item, craftCost, onUpdate, resourceLocation)
 
   def register(capacity:Int, name:String, craftCost:Int, onUpdate:(ItemStack,EntityPlayer)=>Unit, resourceLocation: ResourceLocation):WandRod = {
-    val item=new ItemCap(name)
+    val item=new ItemCap(name.toLowerCase)
     new WandRod(capacity, item, craftCost, onUpdate, resourceLocation)
   }
 }
 object WandUpgrade extends Indexed[WandUpgrade]{
   def register(capacity:Int, discount:Float, name:String, craftCost:Int, onUpdate:(ItemStack,EntityPlayer)=>Unit, model: IBakedSource):WandUpgrade = {
-    val item=new ItemUpgrade(name)
+    val item=new ItemUpgrade(name.toLowerCase)
     new WandUpgrade(capacity, discount, item, craftCost, onUpdate, model)
   }
 
