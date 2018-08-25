@@ -77,7 +77,7 @@ case class Cube(
 
   def scale(sx:Float,sy:Float,sz:Float): Cube = copy(scaleX=scaleX*sx,scaleY=scaleY*sy,scaleZ=scaleZ*sz)
 
-  def scale(s:Float): Cube = copy(scaleX=scaleX*s,scaleY=scaleY*s,scaleZ=scaleZ*s)
+  def scale(s:Float): Cube = scale(s,s,s)
 
   def move(cx1:Float,cy1:Float,cz1:Float): Cube = copy(cx=cx+cx1,cy=cy+cy1,cz=cz+cz1)
 
