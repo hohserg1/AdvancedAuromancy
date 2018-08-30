@@ -10,8 +10,8 @@ import thaumcraft.api.items.RechargeHelper
 object ItemWandCasting extends Wand("itemwandcasting")  with ModelProvider{
   override def setVis(itemStack: ItemStack, amount: Float): Unit = {
     if (itemStack != null) {
-      val amount2 = Math.min(getMaxCharge(itemStack, null), (amount * 1000).toInt)
-      itemStack.setTagInfo("tc.charge", new NBTTagInt(amount2))
+      val amount2 = Math.min(getMaxVis(itemStack), amount)
+      itemStack.setTagInfo("tc.charge", new NBTTagInt((amount2*1000).toInt))
     }
   }
 
