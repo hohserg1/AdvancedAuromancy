@@ -5,6 +5,7 @@ import hohserg.advancedauromancy.blocks._
 import hohserg.advancedauromancy.client._
 import hohserg.advancedauromancy.client.render.TileWandBuilderSpecialRenderer
 import hohserg.advancedauromancy.client.render.simpleItem.SimpleTexturedModelProvider.simpletexturemodel
+import hohserg.advancedauromancy.endervisnet.{ClientEnderVisNet, EnderVisNet, ServerEnderVisNet}
 import hohserg.advancedauromancy.inventory.{ContainerWandBuilder, GuiWandBuilder}
 import hohserg.advancedauromancy.items._
 import hohserg.advancedauromancy.items.base.ItemSelfRegister
@@ -56,7 +57,7 @@ object Main {
   }
 }
 class ServerProxy extends CommonProxy{
-
+  override lazy val enderVisNet: EnderVisNet = new ServerEnderVisNet
 }
 
 class ClientProxy extends CommonProxy{
@@ -98,9 +99,12 @@ class ClientProxy extends CommonProxy{
     ClientRegistry.bindTileEntitySpecialRenderer(classOf[BlockWandBuilder.TileWandBuilder], new TileWandBuilderSpecialRenderer)
   }
 
+  override lazy val enderVisNet: EnderVisNet = new ClientEnderVisNet
 }
 
-class CommonProxy extends IGuiHandler{
+abstract class CommonProxy extends IGuiHandler{
+
+  def enderVisNet:EnderVisNet
 
   private lazy val tab=new CreativeTabs(Main.advancedAuromancyModId) {
     override def getTabIconItem = new ItemStack(Items.APPLE)
