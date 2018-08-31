@@ -21,7 +21,7 @@ class ServerEnderVisNet extends EnderVisNet{
 }
 
 trait EnderVisNet {
-  val nets:mutable.OpenHashMap[String,Data] = new mutable.OpenHashMap[String,Data]()
+  private[there] val nets = new mutable.OpenHashMap[String,Data]()
 
   def updateClient(name: String):Unit
 
