@@ -45,10 +45,9 @@ abstract class Wand(i:String) extends ItemCaster(i,0) with IRechargable {
   def getFocusOption(stack: ItemStack): Option[ItemFocus] = Option(getFocus(stack))
 
 
-  def getCap(itemStack: ItemStack): WandCap = {
-    val cap=itemStack.getString("cap").flatMap(WandCap.apply)
+  def getCap(itemStack: ItemStack): WandCap =
     itemStack.getString("cap").flatMap(WandCap.apply).getOrElse(DefaultCap)
-  }
+
 
   def getRod(itemStack: ItemStack): WandRod = itemStack.getString("rod").flatMap(WandRod.apply).getOrElse(DefaultRod)
 
