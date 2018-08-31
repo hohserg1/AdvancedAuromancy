@@ -19,9 +19,10 @@ object Nbt {
 
     def getList(name:String):List[String] = tag.getTagList(name, 8).iterator().asScala.map{case i:NBTTagString=>i.getString}.toList
 
-    def getTag(name:String):Option[Nbt] = Option(tag.getCompoundTag(name)).map(new Nbt(_))
-    def getInt(name:String):Option[Int] = Option(tag.getInteger(name))
-    def getString(name:String):Option[String] = Option(tag.getString(name))
+    private def get[A](name:String,f:String=>A):Option[A] = if(tag.hasKey(name)) Some(f(name)) else None
+    def getTag(name:String):Option[Nbt] = get(name,tag.getCompoundTag).map(new Nbt(_))
+    def getInt(name:String):Option[Int] = get(name,tag.getInteger)
+    def getString(name:String):Option[String] = get(name,tag.getString)
   }
   implicit def apply(tag: ItemStack): Nbt = new Nbt(tag)
   implicit def apply(tag: NBTTagCompound): Nbt = new Nbt(if(tag==null)new NBTTagCompound else tag)
