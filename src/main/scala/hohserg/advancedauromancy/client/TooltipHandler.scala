@@ -10,6 +10,7 @@ import net.minecraftforge.fml.common.eventhandler.{EventPriority, SubscribeEvent
 
 class TooltipHandler {
   lazy val visChargeLabel = I18n.translateToLocal("tc.charge")
+
   @SubscribeEvent(priority = EventPriority.LOWEST)
   def onTooltip(e:ItemTooltipEvent): Unit ={
     import collection.JavaConverters._
