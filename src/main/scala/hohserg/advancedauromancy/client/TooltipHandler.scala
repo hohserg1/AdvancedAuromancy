@@ -9,6 +9,7 @@ import net.minecraftforge.event.entity.player.ItemTooltipEvent
 import net.minecraftforge.fml.common.eventhandler.{EventPriority, SubscribeEvent}
 
 class TooltipHandler {
+  lazy val visChargeLabel = I18n.translateToLocal("tc.charge")
   @SubscribeEvent(priority = EventPriority.LOWEST)
   def onTooltip(e:ItemTooltipEvent): Unit ={
     import collection.JavaConverters._
@@ -18,7 +19,7 @@ class TooltipHandler {
         if(stack.getItem==ItemEnderWandCasting)
           e.getToolTip add "§bEnder vis net owner is "+Main.proxy.enderVisNet.getName(stack).getOrElse("")
         e.getToolTip.set(0, I18n.translateToLocal(wand.getCap(stack).name)+" "+I18n.translateToLocal(wand.getRod(stack).name))
-        e.getToolTip.set(e.getToolTip.asScala.indexWhere((param: String) => param.contains("Vis charge")),TextFormatting.YELLOW+"Vis charge: "+wand.getVis(stack))
+        e.getToolTip.set(e.getToolTip.asScala.indexWhere((param: String) => param.contains(visChargeLabel)),TextFormatting.YELLOW+visChargeLabel + " "+wand.getVis(stack))
       case _ =>
     }
 
