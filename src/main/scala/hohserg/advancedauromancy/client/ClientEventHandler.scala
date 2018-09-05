@@ -8,7 +8,7 @@ import net.minecraft.client.gui.{GuiListWorldSelection, GuiMainMenu, GuiScreen, 
 import net.minecraft.client.renderer.block.model.{IBakedModel, ModelResourceLocation}
 import net.minecraft.util.ResourceLocation
 import net.minecraftforge.client.event.{GuiOpenEvent, ModelBakeEvent, TextureStitchEvent}
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import net.minecraftforge.fml.common.eventhandler.{EventPriority, SubscribeEvent}
 
 import scala.collection.mutable.ListBuffer
 import scala.util.Try
@@ -27,7 +27,7 @@ class ClientEventHandler extends GuiScreen{
       case _ =>
     }
 
-  @SubscribeEvent
+  @SubscribeEvent(priority = EventPriority.LOW)
   def stitcherEventPre(event: TextureStitchEvent.Pre): Unit = {
     println(event.getMap==Minecraft.getMinecraft.getTextureMapBlocks)
     ClientEventHandler.forRegister.foreach(event.getMap.registerSprite)
