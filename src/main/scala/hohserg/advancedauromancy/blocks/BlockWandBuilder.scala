@@ -51,55 +51,6 @@ object BlockWandBuilder extends BlockContainer(Material.ROCK){
 
   class TileWandBuilder extends TileEntity{
 
-    override def writeToNBT(tagCompound: NBTTagCompound): NBTTagCompound = {
-      val list = new NBTTagList
-      for{
-        i<-0 until inv.getSizeInventory
-        item=inv.getStackInSlot(i)
-        if !item.isEmpty
-      }{
-        val comp = new NBTTagCompound
-        comp.setByte("Slot", i.toByte)
-        item.writeToNBT(comp)
-        list.appendTag(comp)
-      }
-      tagCompound.setTag("Items", list)
-
-      super.writeToNBT(tagCompound)
-    }
-
-    override def readFromNBT(tagCompound: NBTTagCompound): Unit = {
-      val list = tagCompound.getTagList("Items", Constants.NBT.TAG_COMPOUND)
-      for(i<-0 until list.tagCount()){
-        val comp = list.getCompoundTagAt(i)
-        val j = comp.getByte("Slot") & 255
-        comp.removeTag("Slot")
-        if (j >= 0 && j < inv.getSizeInventory) inv.setInventorySlotContents(j,new ItemStack(comp))
-      }
-
-      super.readFromNBT(tagCompound)
-    }
-
-    override def getUpdateTag: NBTTagCompound = writeToNBT(new NBTTagCompound)
-
-    override def onDataPacket(net: NetworkManager, pkt: SPacketUpdateTileEntity): Unit = {
-      readFromNBT(pkt.getNbtCompound)
-    }
-
-    override def getUpdatePacket: SPacketUpdateTileEntity = {
-      val tagCompound = new NBTTagCompound
-      writeToNBT(tagCompound)
-      new SPacketUpdateTileEntity(pos, 3, tagCompound)
-    }
-
-    def sendUpdates(): Unit = {
-        val packet = getUpdatePacket
-        if (packet != null && world.isInstanceOf[WorldServer]) {
-          val chunk = world.asInstanceOf[WorldServer].getPlayerChunkMap.getEntry(pos.getX >> 4, pos.getZ >> 4)
-          if (chunk != null) chunk.sendPacket(packet)
-        }
-    }
-
     def tryInsertItemStack(stack: ItemStack, hitX: Float, hitY: Float, hitZ:Float):Boolean = {
       if(hitY==1 && resultSlot.isEmpty){
         val x=math.min((hitX/0.2).toInt,4)
@@ -163,5 +114,53 @@ object BlockWandBuilder extends BlockContainer(Material.ROCK){
     }
 
     val inv = new InventoryBasic("Wand Builder", true, 14)
+    override def writeToNBT(tagCompound: NBTTagCompound): NBTTagCompound = {
+      val list = new NBTTagList
+      for{
+        i<-0 until inv.getSizeInventory
+        item=inv.getStackInSlot(i)
+        if !item.isEmpty
+      }{
+        val comp = new NBTTagCompound
+        comp.setByte("Slot", i.toByte)
+        item.writeToNBT(comp)
+        list.appendTag(comp)
+      }
+      tagCompound.setTag("Items", list)
+
+      super.writeToNBT(tagCompound)
+    }
+
+    override def readFromNBT(tagCompound: NBTTagCompound): Unit = {
+      val list = tagCompound.getTagList("Items", Constants.NBT.TAG_COMPOUND)
+      for(i<-0 until list.tagCount()){
+        val comp = list.getCompoundTagAt(i)
+        val j = comp.getByte("Slot") & 255
+        comp.removeTag("Slot")
+        if (j >= 0 && j < inv.getSizeInventory) inv.setInventorySlotContents(j,new ItemStack(comp))
+      }
+
+      super.readFromNBT(tagCompound)
+    }
+
+    override def getUpdateTag: NBTTagCompound = writeToNBT(new NBTTagCompound)
+
+    override def onDataPacket(net: NetworkManager, pkt: SPacketUpdateTileEntity): Unit = {
+      readFromNBT(pkt.getNbtCompound)
+    }
+
+    override def getUpdatePacket: SPacketUpdateTileEntity = {
+      val tagCompound = new NBTTagCompound
+      writeToNBT(tagCompound)
+      new SPacketUpdateTileEntity(pos, 3, tagCompound)
+    }
+
+    def sendUpdates(): Unit = {
+      val packet = getUpdatePacket
+      if (packet != null && world.isInstanceOf[WorldServer]) {
+        val chunk = world.asInstanceOf[WorldServer].getPlayerChunkMap.getEntry(pos.getX >> 4, pos.getZ >> 4)
+        if (chunk != null) chunk.sendPacket(packet)
+      }
+    }
   }
 }
