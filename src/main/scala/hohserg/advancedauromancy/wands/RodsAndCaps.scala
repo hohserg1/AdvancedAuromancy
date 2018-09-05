@@ -103,7 +103,7 @@ class WandUpgrade(val capacity:Int, val discount:Float, val item:Item, val craft
   WandUpgrade(name)=this
 }
 
-object DefaultRod extends WandRod(100, new ItemRod("DefaultRod"),0,WandRod.identityOnUpdate,new ResourceLocation(advancedAuromancyModId+":rods_and_caps/wand_rod_silverwood"))
-object DefaultCap extends WandCap(0.7f, new ItemCap("DefaultCap"),100,new ResourceLocation(advancedAuromancyModId+":rods_and_caps/wand_cap_thaumium"))
+object DefaultRod extends WandRod(100, new ItemRod("defaultrod"),0,WandRod.identityOnUpdate,new ResourceLocation(advancedAuromancyModId+":rods_and_caps/wand_rod_silverwood"))
+object DefaultCap extends WandCap(0.7f, new ItemCap("defaultcap"),100,new ResourceLocation(advancedAuromancyModId+":rods_and_caps/wand_cap_thaumium"))
 
 
