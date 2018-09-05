@@ -21,7 +21,6 @@ class TexturedFinalisedModel(val parentModel: IBakedModel, key:String)  extends 
 
   val textureAtlasSprite: TextureAtlasSprite = Minecraft.getMinecraft.getTextureMapBlocks.getAtlasSprite(key)
   val quads: ImmutableList[BakedQuad] = ItemLayerModel.getQuadsForSprite(0, textureAtlasSprite,DefaultVertexFormats.ITEM,Optional.empty())
-  println(key,textureAtlasSprite)
 
   override def getQuads(state: IBlockState, side: EnumFacing, rand: Long): util.List[BakedQuad] = {
     if (side != null)

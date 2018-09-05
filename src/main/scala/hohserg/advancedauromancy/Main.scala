@@ -95,7 +95,6 @@ class ClientProxy extends CommonProxy{
     blocks.foreach (
       block => {
         val model = new ModelResourceLocation(block.getRegistryName, "inventory")
-        println(model)
         Minecraft.getMinecraft.getRenderItem.getItemModelMesher.register(Item.getItemFromBlock(block), 0, model)
         ModelLoader.setCustomModelResourceLocation(Item.getItemFromBlock(block), 0, model)
       }
