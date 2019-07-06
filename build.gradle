@@ -31,9 +31,9 @@ apply plugin: 'net.minecraftforge.gradle.forge'
 
 
 
-version = modVersion
-group = modGroup
-archivesBaseName = modBaseName
+version = "1.0"
+group = "hohserg.advancedauromancy"
+archivesBaseName = "AdvancedAuromancy"
 
 tasks.withType(ScalaCompile) {
     sourceCompatibility = "1.7"
@@ -46,7 +46,7 @@ compileJava {
 }
 
 minecraft {
-    version = "1.12.2-14.23.3.2655"
+    version = "1.12.2-14.23.5.2768"
     runDir = "run"
     
     // the mappings can be changed at any time, and must be in the following format.

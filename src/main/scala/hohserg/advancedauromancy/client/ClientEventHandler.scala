@@ -1,21 +1,98 @@
 package hohserg.advancedauromancy.client
 
+import java.awt.Color
+
 import hohserg.advancedauromancy.client.render.simpleItem.{SimpleTexturedModelProvider, TexturedModel}
 import hohserg.advancedauromancy.client.render.wand.WandModel
+import hohserg.advancedauromancy.core.Main
 import hohserg.advancedauromancy.items.ItemWandCasting
+import hohserg.advancedauromancy.items.base.Wand
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.{GuiListWorldSelection, GuiMainMenu, GuiScreen, GuiWorldSelection}
+import net.minecraft.client.gui._
 import net.minecraft.client.renderer.block.model.{IBakedModel, ModelResourceLocation}
+import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.item.ItemStack
 import net.minecraft.util.ResourceLocation
 import net.minecraftforge.client.event.{GuiOpenEvent, ModelBakeEvent, TextureStitchEvent}
 import net.minecraftforge.fml.common.eventhandler.{EventPriority, SubscribeEvent}
+import net.minecraftforge.fml.common.gameevent.TickEvent
+import net.minecraftforge.fml.common.gameevent.TickEvent.Phase
+import org.lwjgl.opengl.GL11
+import org.lwjgl.opengl.GL11._
+import thaumcraft.api.aspects.Aspect
+import thaumcraft.client.lib.UtilsFX
 
 import scala.collection.mutable.ListBuffer
 import scala.util.Try
 
-class ClientEventHandler extends GuiScreen{
+class ClientEventHandler extends GuiScreen {
   mc = Minecraft.getMinecraft
 
+  @SubscribeEvent
+  def renderTick(event: TickEvent.RenderTickEvent) {
+    if (event.phase != Phase.START && mc.inGameHasFocus)
+      mc.getRenderViewEntity match {
+        case player: EntityPlayer =>
+          val handStack = player.getHeldItemMainhand
+          if (!handStack.isEmpty && handStack.getItem.isInstanceOf[Wand])
+            renderCastingWandHud(handStack)
+        case _ =>
+      }
+  }
+
+  lazy private val particleTexture = new ResourceLocation(Main.advancedAuromancyModId, "textures/particle/particle.png")
+
+
+  lazy private val hudTexture = new ResourceLocation("thaumcraft", "textures/gui/hud.png")
+
+
+  def renderCastingWandHud(wandstack: ItemStack): Unit = {
+    wandstack.getItem match {
+      case wand: Wand =>
+
+        glPushMatrix()
+
+        val sr = new ScaledResolution(Minecraft.getMinecraft)
+        glClear(256)
+        glMatrixMode(5889)
+        glLoadIdentity()
+        glOrtho(0.0D, sr.getScaledWidth_double, sr.getScaledHeight_double, 0.0D, 1000.0D, 3000.0D)
+        glMatrixMode(5888)
+        glEnable(3042)
+        glBlendFunc(770, 771)
+
+        //GL11.glTranslatef(16.0F, 16.0F, 0.0F)
+        mc.renderEngine.bindTexture(hudTexture)
+        val max = wand.getMaxVis(wandstack)
+        val cur = wand.getVis(wandstack)
+
+        glTranslatef(42, 6, 0.0F)
+        glScaled(0.5D, 0.5D, 0.5D)
+        glColor4f(1.0F, 1.0F, 1.0F, 1.0F)
+
+        val loc = (30.0F * cur / max).toInt
+
+        glPushMatrix()
+        val ac = new Color(Aspect.AURA.getColor)
+        glColor4f(ac.getRed / 255.0F, ac.getGreen / 255.0F, ac.getBlue / 255.0F, 0.8F)
+        UtilsFX.drawTexturedQuad(-4.0F, 35 - loc, 104.0F, 0.0F, 8.0F, loc, -90.0D)
+        glColor4f(1.0F, 1.0F, 1.0F, 1.0F)
+        glPopMatrix()
+
+        glPushMatrix()
+        UtilsFX.drawTexturedQuad(-8.0F, -3.0F, 72.0F, 0.0F, 16.0F, 42.0F, -90.0D)
+        glPopMatrix()
+
+        glColor4f(1,1,1,1)
+
+        glPopMatrix()
+
+        GL11.glDisable(3042)
+      case _ =>
+
+    }
+
+  }
 
   @SubscribeEvent
   def onMainMenu(event: GuiOpenEvent): Unit =
@@ -32,14 +109,17 @@ class ClientEventHandler extends GuiScreen{
     ClientEventHandler.forRegister.foreach(event.getMap.registerSprite)
   }
 
-  val modelWrappersMap=Map(
-    new ModelResourceLocation(ItemWandCasting.getRegistryName, "inventory")->{new WandModel(_)},
-    SimpleTexturedModelProvider.defaultLocation->{new TexturedModel(_)}
+  val modelWrappersMap = Map(
+    new ModelResourceLocation(ItemWandCasting.getRegistryName, "inventory") -> {
+      new WandModel(_)
+    },
+    SimpleTexturedModelProvider.defaultLocation -> {
+      new TexturedModel(_)
+    }
   )
 
-
   @SubscribeEvent def onModelBakeEvent(event: ModelBakeEvent): Unit = {
-    modelWrappersMap.foreach{case (model,wrapper)=>
+    modelWrappersMap.foreach { case (model, wrapper) =>
       val `object` = event.getModelRegistry.getObject(model)
       `object` match {
         case existingModel: IBakedModel =>

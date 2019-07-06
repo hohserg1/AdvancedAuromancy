@@ -1,6 +1,6 @@
 package hohserg.advancedauromancy.utils
 
-import hohserg.advancedauromancy.Main
+import hohserg.advancedauromancy.core.Main
 import net.minecraft.inventory.InventoryCrafting
 import net.minecraft.item.ItemStack
 import net.minecraft.item.crafting.IRecipe

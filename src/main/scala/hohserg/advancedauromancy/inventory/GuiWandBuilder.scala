@@ -1,6 +1,6 @@
 package hohserg.advancedauromancy.inventory
 
-import hohserg.advancedauromancy.Main
+import hohserg.advancedauromancy.core.Main
 import net.minecraft.client.gui.inventory.GuiContainer
 import net.minecraft.util.ResourceLocation
 

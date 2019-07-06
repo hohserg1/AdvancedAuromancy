@@ -1,6 +1,6 @@
 package hohserg.advancedauromancy.client
 
-import hohserg.advancedauromancy.Main
+import hohserg.advancedauromancy.core.Main
 import hohserg.advancedauromancy.items.ItemEnderWandCasting
 import hohserg.advancedauromancy.items.base.Wand
 import net.minecraft.util.text.TextFormatting

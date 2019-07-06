@@ -1,39 +1,55 @@
 package hohserg.advancedauromancy.items.base
 
-import hohserg.advancedauromancy.nbt.Nbt._
+import hohserg.advancedauromancy.nbt.Nbt
 import hohserg.advancedauromancy.wands._
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.entity.{Entity, EntityLivingBase}
 import net.minecraft.item.ItemStack
+import net.minecraft.nbt.NBTTagString
+import net.minecraft.util.ResourceLocation
 import net.minecraft.world.World
+import net.minecraftforge.fml.common.registry.GameRegistry
 import thaumcraft.api.items.IRechargable
 import thaumcraft.common.config.ConfigItems
 import thaumcraft.common.items.casters.{CasterManager, ItemCaster, ItemFocus}
 
-abstract class Wand(i:String) extends ItemCaster(i,0) with IRechargable {
+import scala.collection.JavaConverters._
+
+abstract class Wand(i: String) extends ItemCaster(i, 0) with IRechargable {
   ConfigItems.ITEM_VARIANT_HOLDERS.remove(this)
 
-  def getUpgrades(is: ItemStack):List[WandUpgrade] = is.getTagCompound.getList("upgrades").flatMap(WandUpgrade.apply)
+  def getUpgrades(is: ItemStack): List[WandUpgrade] =
+    Nbt(is)
+      .getTagList("upgrades", 8)
+      .iterator()
+      .asScala
+      .collect { case tag: NBTTagString => tag.getString }
+      .map(new ResourceLocation(_))
+      .map(GameRegistry.findRegistry(classOf[WandUpgrade]).getValue)
+      .toList
 
 
   override def onUpdate(is: ItemStack, w: World, e: Entity, slot: Int, currentItem: Boolean): Unit = {
 
   }
+
   override def getConsumptionModifier(is: ItemStack, player: EntityPlayer, crafting: Boolean): Float = {
-    var consumptionModifier = getCap(is).discount*getUpgrades(is).map(_.discount).product
+    var consumptionModifier = getCap(is).discount * getUpgrades(is).map(_.discount).product
     if (player != null) consumptionModifier -= CasterManager.getTotalVisDiscount(player)
     Math.max(consumptionModifier, 0.1F)
   }
-  override def consumeVis(itemStack: ItemStack, entityPlayer: EntityPlayer, amount: Float, crafting: Boolean,sim: Boolean): Boolean = {
+
+  override def consumeVis(itemStack: ItemStack, entityPlayer: EntityPlayer, amount: Float, crafting: Boolean, sim: Boolean): Boolean = {
     val amount2 = amount * getConsumptionModifier(itemStack, entityPlayer, crafting)
     val current = getVis(itemStack)
     if (current >= amount2) {
-      if(!sim)
+      if (!sim)
         setVis(itemStack, current - amount2)
       true
     } else false
   }
-  def getMaxVis(itemStack: ItemStack): Int = getRod(itemStack).capacity+getUpgrades(itemStack).map(_.capacity).sum
+
+  def getMaxVis(itemStack: ItemStack): Int = getRod(itemStack).capacity + getUpgrades(itemStack).map(_.capacity).sum
 
   def setVis(itemStack: ItemStack, amount: Float): Unit
 
@@ -46,12 +62,18 @@ abstract class Wand(i:String) extends ItemCaster(i,0) with IRechargable {
 
 
   def getCap(itemStack: ItemStack): WandCap =
-    itemStack.getString("cap").flatMap(WandCap.apply).getOrElse(DefaultCap)
+    Option(GameRegistry.findRegistry(classOf[WandCap]))
+      .map(_.getValue(new ResourceLocation(Nbt(itemStack).getString("cap"))))
+      .getOrElse(RodsAndCaps.DefaultCap)
 
 
-  def getRod(itemStack: ItemStack): WandRod = itemStack.getString("rod").flatMap(WandRod.apply).getOrElse(DefaultRod)
+  def getRod(itemStack: ItemStack): WandRod =
+    Option(GameRegistry.findRegistry(classOf[WandRod]))
+      .map(_.getValue(new ResourceLocation(Nbt(itemStack).getString("rod"))))
+      .getOrElse(RodsAndCaps.DefaultRod)
 
-  def getMaxCharge(itemStack: ItemStack, entityLivingBase: EntityLivingBase): Int = getMaxVis(itemStack) * 1000
+  def getMaxCharge(itemStack: ItemStack, entityLivingBase: EntityLivingBase): Int =
+    getMaxVis(itemStack) * 1000
 
   def showInHud(itemStack: ItemStack, entityLivingBase: EntityLivingBase) = IRechargable.EnumChargeDisplay.NEVER
 }

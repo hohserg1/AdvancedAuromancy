@@ -1,10 +1,10 @@
 package hohserg.advancedauromancy.blocks
 
-import hohserg.advancedauromancy.items.ItemWandCasting
-import hohserg.advancedauromancy.nbt.Nbt._
-import hohserg.advancedauromancy.wands._
-import hohserg.advancedauromancy.Main
+import hohserg.advancedauromancy.core.Main
+import hohserg.advancedauromancy.items.{ItemWandCasting, ItemWandComponent}
+import hohserg.advancedauromancy.nbt.Nbt
 import hohserg.advancedauromancy.utils.ItemUtils
+import hohserg.advancedauromancy.wands._
 import net.minecraft.block.BlockContainer
 import net.minecraft.block.material.Material
 import net.minecraft.block.state.IBlockState
@@ -19,80 +19,102 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.util.{EnumBlockRenderType, EnumFacing, EnumHand}
 import net.minecraft.world.{World, WorldServer}
 import net.minecraftforge.common.util.Constants
+import net.minecraftforge.fml.common.registry.GameRegistry
+import net.minecraftforge.registries.IForgeRegistry
 import thaumcraft.common.items.casters.ItemCaster
 
-object BlockWandBuilder extends BlockContainer(Material.ROCK){
+object BlockWandBuilder extends BlockContainer(Material.ROCK) {
 
   override def getRenderType(state: IBlockState) = EnumBlockRenderType.MODEL
 
-  override def onBlockActivated(worldIn: World, pos: BlockPos, state: IBlockState, playerIn: EntityPlayer, hand: EnumHand, facing: EnumFacing, hitX: Float, hitY: Float, hitZ: Float):Boolean = {
-    if(!worldIn.isRemote) {
+  override def onBlockActivated(worldIn: World, pos: BlockPos, state: IBlockState, playerIn: EntityPlayer, hand: EnumHand, facing: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): Boolean = {
+    if (!worldIn.isRemote) {
       Option(worldIn.getTileEntity(pos))
-        .collect({ case tile: TileWandBuilder => tile }).foreach(tile=>
-          playerIn.getHeldItem(hand).getItem match {
-            case caster: ItemCaster => tile.craft(playerIn, caster)
-            case item =>
-              if(!tile.tryInsertItemStack(playerIn.getHeldItem(hand),hitX, hitY, hitZ))
-                playerIn.openGui(Main, 0, worldIn, pos.getX, pos.getY, pos.getZ)
-              tile.markDirty()
-          })
+        .collect({ case tile: TileWandBuilder => tile }).foreach(tile =>
+        playerIn.getHeldItem(hand).getItem match {
+          case caster: ItemCaster => tile.craft(playerIn, caster)
+          case item =>
+            if (!tile.tryInsertItemStack(playerIn.getHeldItem(hand), hitX, hitY, hitZ))
+              playerIn.openGui(Main, 0, worldIn, pos.getX, pos.getY, pos.getZ)
+            tile.markDirty()
+        })
     }
     true
   }
+
   override def createNewTileEntity(worldIn: World, meta: Int): TileEntity = new TileWandBuilder
 
-  val craftMatrix=Vector(
-    Vector(None,None,None,Some((WandUpgrade,13)),Some((WandUpgrade,12))),
-    Vector(None,None,Some((WandUpgrade,4)),Some((WandCap,1)),Some((WandUpgrade,11))),
-    Vector(None,Some((WandUpgrade,5)),Some((WandRod,0)),Some((WandUpgrade,6)),None),
-    Vector(Some((WandUpgrade,10)),Some((WandCap,2)),Some((WandUpgrade,7)),None,None),
-    Vector(Some((WandUpgrade,8)),Some((WandUpgrade,9)),None,None,None)
+  type ComponentByStack[A] = ItemStack => Option[A]
+
+  def getByRegistry[A <: WandComponentRegistryEntry[A]](registry: IForgeRegistry[A]): ComponentByStack[A] =
+    itemStack => Option(registry.getValue(ItemWandComponent.getComponentKey(itemStack))).filter(!_.isDefault)
+
+  lazy val capByStack: ComponentByStack[WandCap] = getByRegistry(GameRegistry.findRegistry(classOf[WandCap]))
+
+  lazy val rodByStack: ComponentByStack[WandRod] = getByRegistry(GameRegistry.findRegistry(classOf[WandRod]))
+
+  lazy val upgradeByStack: ComponentByStack[WandUpgrade] = getByRegistry(GameRegistry.findRegistry(classOf[WandUpgrade]))
+
+
+  val craftMatrix: Vector[Vector[Option[(ComponentByStack[_], Int)]]] = Vector(
+    Vector(None, None, None, Some((upgradeByStack, 13)), Some((upgradeByStack, 12))),
+    Vector(None, None, Some((upgradeByStack, 4)), Some((capByStack, 1)), Some((upgradeByStack, 11))),
+    Vector(None, Some((upgradeByStack, 5)), Some((rodByStack, 0)), Some((upgradeByStack, 6)), None),
+    Vector(Some((upgradeByStack, 10)), Some((capByStack, 2)), Some((upgradeByStack, 7)), None, None),
+    Vector(Some((upgradeByStack, 8)), Some((upgradeByStack, 9)), None, None, None)
   )
 
-  class TileWandBuilder extends TileEntity{
+  class TileWandBuilder extends TileEntity {
 
-    def tryInsertItemStack(stack: ItemStack, hitX: Float, hitY: Float, hitZ:Float):Boolean = {
-      if(hitY==1 && resultSlot.isEmpty){
-        val x=math.min((hitX/0.2).toInt,4)
-        val z=math.min((hitZ/0.2).toInt,4)
-        craftMatrix(x)(z).flatMap(i => i._1(ItemUtils.getItemStackKey(stack)).map(_ => i._2)).exists(i => {
-          val takeOne=stack.copy()
-          takeOne.setCount(1)
-          stack.shrink(1)
-          inv.setInventorySlotContents(i, takeOne)
-          sendUpdates()
-          markDirty()
-          true
-        })
-      }else
+    def tryInsertItemStack(stack: ItemStack, hitX: Float, hitY: Float, hitZ: Float): Boolean = {
+      if (hitY == 1 && resultSlot.isEmpty) {
+        val x = math.min((hitX / 0.2).toInt, 4)
+        val z = math.min((hitZ / 0.2).toInt, 4)
+        craftMatrix(x)(z)
+          .filter(_._1(stack).nonEmpty)
+          .map(_._2)
+          .exists { slotIndex =>
+            val takeOne = stack.copy()
+            takeOne.setCount(1)
+            stack.shrink(1)
+            inv.setInventorySlotContents(slotIndex, takeOne)
+            sendUpdates()
+            markDirty()
+            true
+          }
+      } else
         false
     }
 
-    def capSlot: ItemStack ={
-      val item=inv.getStackInSlot _
-      if(ItemUtils.equalsStacks(item(1),item(2))) item(1)
+    def capSlot: ItemStack = {
+      val item = inv.getStackInSlot _
+      if (ItemUtils.equalsStacks(item(1), item(2))) item(1)
       else ItemStack.EMPTY
     }
-    
+
     def rodSlot: ItemStack = inv.getStackInSlot(0)
 
     def resultSlot: ItemStack = inv.getStackInSlot(3)
 
-    def craft(playerIn: EntityPlayer,tool:ItemCaster): Unit ={
-      val item=inv.getStackInSlot _
-      if(resultSlot.isEmpty) {
+    def craft(playerIn: EntityPlayer, tool: ItemCaster): Unit = {
+      val item = inv.getStackInSlot _
+      if (resultSlot.isEmpty) {
         val upgrades = {
-          for {i <- 4 to 8 if item(i) != null} yield
-            WandUpgrade(ItemUtils.getItemStackKey(item(i))).map(w=>(w,i))
+          for {
+            i <- 4 to 8
+            stack = item(i)
+            if !stack.isEmpty
+          } yield
+            upgradeByStack(stack).map(_ -> i)
         }.flatten
 
-        craftRodAndCaps(rodSlot, capSlot,upgrades.map(_._1))
+        craftRodAndCaps(rodSlot, capSlot, upgrades.map(_._1))
           .foreach({
             for {i <- upgrades}
-              inv.decrStackSize(i._2,1)
+              inv.decrStackSize(i._2, 1)
             for {i <- 0 to 2}
-              inv.decrStackSize(i,1)
-            inv.setInventorySlotContents(3,_)
+              inv.decrStackSize(i, 1)
+            inv.setInventorySlotContents(3, _)
           })
         sendUpdates()
         markDirty()
@@ -100,27 +122,29 @@ object BlockWandBuilder extends BlockContainer(Material.ROCK){
       }
     }
 
-    def craftRodAndCaps(rodStack: ItemStack, capStack: ItemStack,upgrades: Seq[WandUpgrade]): Option[ItemStack] = {
-      WandCap(ItemUtils.getItemStackKey(capStack))
-        .flatMap(cap=> WandRod(ItemUtils.getItemStackKey(rodStack))
-            .map(rod=>
-              Map("cap"->cap.name,"rod"->rod.name,"wandUpgrades"->upgrades.map(_.name))
-            ))
-        .map(nbt=>{
-          val i=new ItemStack(ItemWandCasting,1)
-          i.setTagCompound(nbt)
-          i
-        })
+    def craftRodAndCaps(rodStack: ItemStack, capStack: ItemStack, upgrades: Seq[WandUpgrade]): Option[ItemStack] = {
+      capByStack(capStack).flatMap(cap =>
+        rodByStack(rodStack).map(rod =>
+          Map("cap" -> cap.name, "rod" -> rod.name, "wandUpgrades" -> upgrades.map(_.name))
+        ))
+        .map(Nbt.fromMap)
+        .map {
+          nbt =>
+            val r = new ItemStack(ItemWandCasting)
+            r.setTagCompound(nbt)
+            r
+        }
     }
 
     val inv = new InventoryBasic("Wand Builder", true, 14)
+
     override def writeToNBT(tagCompound: NBTTagCompound): NBTTagCompound = {
       val list = new NBTTagList
-      for{
-        i<-0 until inv.getSizeInventory
-        item=inv.getStackInSlot(i)
+      for {
+        i <- 0 until inv.getSizeInventory
+        item = inv.getStackInSlot(i)
         if !item.isEmpty
-      }{
+      } {
         val comp = new NBTTagCompound
         comp.setByte("Slot", i.toByte)
         item.writeToNBT(comp)
@@ -133,11 +157,11 @@ object BlockWandBuilder extends BlockContainer(Material.ROCK){
 
     override def readFromNBT(tagCompound: NBTTagCompound): Unit = {
       val list = tagCompound.getTagList("Items", Constants.NBT.TAG_COMPOUND)
-      for(i<-0 until list.tagCount()){
+      for (i <- 0 until list.tagCount()) {
         val comp = list.getCompoundTagAt(i)
         val j = comp.getByte("Slot") & 255
         comp.removeTag("Slot")
-        if (j >= 0 && j < inv.getSizeInventory) inv.setInventorySlotContents(j,new ItemStack(comp))
+        if (j >= 0 && j < inv.getSizeInventory) inv.setInventorySlotContents(j, new ItemStack(comp))
       }
 
       super.readFromNBT(tagCompound)
@@ -163,4 +187,5 @@ object BlockWandBuilder extends BlockContainer(Material.ROCK){
       }
     }
   }
+
 }
