@@ -64,12 +64,14 @@ abstract class Wand(i: String) extends ItemCaster(i, 0) with IRechargable {
   def getCap(itemStack: ItemStack): WandCap =
     Option(GameRegistry.findRegistry(classOf[WandCap]))
       .map(_.getValue(new ResourceLocation(Nbt(itemStack).getString("cap"))))
+      .flatMap(Option.apply)
       .getOrElse(RodsAndCaps.DefaultCap)
 
 
   def getRod(itemStack: ItemStack): WandRod =
     Option(GameRegistry.findRegistry(classOf[WandRod]))
       .map(_.getValue(new ResourceLocation(Nbt(itemStack).getString("rod"))))
+      .flatMap(Option.apply)
       .getOrElse(RodsAndCaps.DefaultRod)
 
   def getMaxCharge(itemStack: ItemStack, entityLivingBase: EntityLivingBase): Int =

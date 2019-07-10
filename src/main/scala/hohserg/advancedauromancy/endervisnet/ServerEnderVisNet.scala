@@ -38,20 +38,25 @@ class ServerEnderVisNet extends EnderVisNet {
 
   private var saved = false
 
-  @SubscribeEvent
-  def onSave(e: WorldEvent.Save): Unit = {
-    println(Thread.currentThread())
-    if (!saved)
-      try {
-        new File(evnSavePath).mkdirs()
-        for (i <- nets) {
-          val oos = new ObjectOutputStream(new FileOutputStream(evnSavePath + i._1))
-          oos.writeObject(i._2)
-          oos.close()
+  val worlsSaveHandler = new WorlsSaveHandler
+
+  class WorlsSaveHandler {
+    @SubscribeEvent
+    def onSave(e: WorldEvent.Save): Unit = {
+      println(Thread.currentThread())
+      if (!saved)
+        try {
+          new File(evnSavePath).mkdirs()
+          for (i <- nets) {
+            val oos = new ObjectOutputStream(new FileOutputStream(evnSavePath + i._1))
+            oos.writeObject(i._2)
+            oos.close()
+          }
+          saved = true
+        } catch {
+          case e: Exception => e.printStackTrace()
         }
-        saved = true
-      } catch {
-        case e: Exception => e.printStackTrace()
-      }
+    }
   }
+
 }

@@ -5,11 +5,11 @@ import net.minecraft.util.ResourceLocation
 
 object RodsAndCaps {
 
-  object DefaultRod extends WandRod("defaultrod", 100, 0, WandRod.identityOnUpdate)(new ResourceLocation(advancedAuromancyModId + ":rods_and_caps/wand_rod_silverwood")) {
+  object DefaultRod extends WandRod("defaultrod", 100, 0, WandRod.identityOnUpdate)(new ResourceLocation(advancedAuromancyModId + ":rods_and_caps/wand_silverwood_rod")) {
     override def isDefault = true
   }
 
-  object DefaultCap extends WandCap("defaultcap", 0.7f, 100)(new ResourceLocation(advancedAuromancyModId + ":rods_and_caps/wand_cap_thaumium")) {
+  object DefaultCap extends WandCap("defaultcap", 0.7f, 100)(new ResourceLocation(advancedAuromancyModId + ":rods_and_caps/wand_thaumium_cap")) {
     override def isDefault = true
   }
 

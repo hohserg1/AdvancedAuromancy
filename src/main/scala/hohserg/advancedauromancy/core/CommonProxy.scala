@@ -3,6 +3,7 @@ package hohserg.advancedauromancy.core
 import codechicken.lib.packet.PacketCustom
 import hohserg.advancedauromancy.blocks.BlockWandBuilder
 import hohserg.advancedauromancy.blocks.BlockWandBuilder.TileWandBuilder
+import hohserg.advancedauromancy.client.render.simpleItem.SimpleTexturedModelProvider.simpletexturemodel
 import hohserg.advancedauromancy.core.Main._
 import hohserg.advancedauromancy.endervisnet.EnderVisNet
 import hohserg.advancedauromancy.foci.FocusMediumOrb
@@ -11,15 +12,15 @@ import hohserg.advancedauromancy.items._
 import hohserg.advancedauromancy.network.ServerPacketHandler
 import hohserg.advancedauromancy.wands.RodsAndCaps.{DefaultCap, DefaultRod}
 import hohserg.advancedauromancy.wands.WandRod.identityOnUpdate
-import hohserg.advancedauromancy.wands.{DefaultMissingFactory, WandCap, WandRod, WandUpgrade}
+import hohserg.advancedauromancy.wands.{WandCap, WandRod}
 import net.minecraft.block.{Block, ITileEntityProvider}
 import net.minecraft.creativetab.CreativeTabs
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.init.Items
 import net.minecraft.item.{Item, ItemBlock, ItemStack}
 import net.minecraft.tileentity.TileEntity
+import net.minecraft.util.ResourceLocation
 import net.minecraft.util.math.BlockPos
-import net.minecraft.util.{NonNullList, ResourceLocation}
 import net.minecraft.world.World
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.RegistryEvent
@@ -27,7 +28,6 @@ import net.minecraftforge.fml.common.event.{FMLInitializationEvent, FMLPostIniti
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.common.network.{IGuiHandler, NetworkRegistry}
 import net.minecraftforge.fml.common.registry.{EntityEntry, GameRegistry}
-import net.minecraftforge.registries.RegistryBuilder
 import thaumcraft.api.ThaumcraftApi
 import thaumcraft.api.aspects.{Aspect, AspectList}
 import thaumcraft.api.casters.FocusEngine
@@ -45,7 +45,7 @@ abstract class CommonProxy extends IGuiHandler {
 
 
   protected val blocksToRegister = ListBuffer[Block](BlockWandBuilder)
-  protected val itemsToRegister = ListBuffer[Item](ItemWandCasting, ItemEnderWandCasting, ItemWandComponent)
+  protected val itemsToRegister = ListBuffer[Item](ItemWandCasting, ItemEnderWandCasting, ItemWandComponent, simpletexturemodel)
   protected val tilesToRegister = ListBuffer[Class[_ <: TileEntity]]()
   protected val entityToRegister = ListBuffer[EntityEntry]()
 
@@ -81,30 +81,10 @@ abstract class CommonProxy extends IGuiHandler {
       }
     })
 
-    MinecraftForge.EVENT_BUS.register(enderVisNet)
-
     NetworkRegistry.INSTANCE.registerGuiHandler(Main, this)
   }
 
   private def nameByClass(item: Any) = item.getClass.getSimpleName.dropRight(1).toLowerCase
-
-  @SubscribeEvent def registerWandRegistry(e: RegistryEvent.NewRegistry): Unit = {
-    new RegistryBuilder()
-      .setName(new ResourceLocation(advancedAuromancyModId, "wand_cap"))
-      .setType(classOf[WandCap])
-      .set(new DefaultMissingFactory[WandCap](DefaultCap))
-      .create()
-    new RegistryBuilder()
-      .setName(new ResourceLocation(advancedAuromancyModId, "wand_rod"))
-      .setType(classOf[WandRod])
-      .set(new DefaultMissingFactory[WandRod](DefaultRod))
-      .create()
-    new RegistryBuilder()
-      .setName(new ResourceLocation(advancedAuromancyModId, "wand_upgrade"))
-      .setType(classOf[WandUpgrade])
-      .set(new DefaultMissingFactory[WandUpgrade](null))
-      .create()
-  }
 
   @SubscribeEvent def registerBlocks(e: RegistryEvent.Register[Block]): Unit = {
     blocksToRegister.foreach(e.getRegistry.register)
@@ -126,6 +106,7 @@ abstract class CommonProxy extends IGuiHandler {
       WandCap("ender_cap", 0.7f, 100)(),
       DefaultCap
     )
+    ItemWandComponent.loadTexturesFor(e.getRegistry)
   }
 
   @SubscribeEvent def registerWandRod(e: RegistryEvent.Register[WandRod]): Unit = {
@@ -140,6 +121,7 @@ abstract class CommonProxy extends IGuiHandler {
       WandRod("jungle_rod", 100, 0, identityOnUpdate)(),
       DefaultRod
     )
+    ItemWandComponent.loadTexturesFor(e.getRegistry)
   }
 
   @SubscribeEvent def registerEntities(e: RegistryEvent.Register[EntityEntry]): Unit = {
@@ -151,8 +133,6 @@ abstract class CommonProxy extends IGuiHandler {
   }
 
   def postinit(event: FMLPostInitializationEvent): Unit = {
-    tab.displayAllRelevantItems(NonNullList.create())
-
     ResearchCategories.registerCategory(advancedAuromancyModId.toUpperCase, "FLUX",
       new AspectList().add(Aspect.AURA, 1).add(Aspect.CRAFT, 1).add(Aspect.MAGIC, 1),
       new ResourceLocation(advancedAuromancyModId, "textures/icon.png"),
