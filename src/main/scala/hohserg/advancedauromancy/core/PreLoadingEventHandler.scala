@@ -1,8 +1,7 @@
 package hohserg.advancedauromancy.core
 
 import hohserg.advancedauromancy.core.Main.advancedAuromancyModId
-import hohserg.advancedauromancy.wands.RodsAndCaps.{DefaultCap, DefaultRod}
-import hohserg.advancedauromancy.wands.{DefaultMissingFactory, WandCap, WandRod, WandUpgrade}
+import hohserg.advancedauromancy.wands.{WandCap, WandRod, WandUpgrade}
 import net.minecraft.util.ResourceLocation
 import net.minecraftforge.event.RegistryEvent
 import net.minecraftforge.fml.common.Mod
@@ -16,17 +15,17 @@ object PreLoadingEventHandler {
     new RegistryBuilder()
       .setName(new ResourceLocation(advancedAuromancyModId, "wand_cap"))
       .setType(classOf[WandCap])
-      .set(new DefaultMissingFactory[WandCap](DefaultCap))
+      .setDefaultKey(new ResourceLocation(advancedAuromancyModId, "default_cap"))
       .create()
     new RegistryBuilder()
       .setName(new ResourceLocation(advancedAuromancyModId, "wand_rod"))
       .setType(classOf[WandRod])
-      .set(new DefaultMissingFactory[WandRod](DefaultRod))
+      .setDefaultKey(new ResourceLocation(advancedAuromancyModId, "default_rod"))
       .create()
     new RegistryBuilder()
       .setName(new ResourceLocation(advancedAuromancyModId, "wand_upgrade"))
       .setType(classOf[WandUpgrade])
-      .set(new DefaultMissingFactory[WandUpgrade](null))
+      .setDefaultKey(new ResourceLocation(advancedAuromancyModId, "default_upgrade"))
       .create()
   }
 
