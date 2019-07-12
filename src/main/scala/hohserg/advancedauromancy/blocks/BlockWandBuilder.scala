@@ -30,14 +30,15 @@ object BlockWandBuilder extends BlockContainer(Material.ROCK) {
   override def onBlockActivated(worldIn: World, pos: BlockPos, state: IBlockState, playerIn: EntityPlayer, hand: EnumHand, facing: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): Boolean = {
     if (!worldIn.isRemote) {
       Option(worldIn.getTileEntity(pos))
-        .collect({ case tile: TileWandBuilder => tile }).foreach(tile =>
-        playerIn.getHeldItem(hand).getItem match {
-          case caster: ItemCaster => tile.craft(playerIn, caster)
-          case item =>
-            if (!tile.tryInsertItemStack(playerIn.getHeldItem(hand), hitX, hitY, hitZ))
-              playerIn.openGui(Main, 0, worldIn, pos.getX, pos.getY, pos.getZ)
-            tile.markDirty()
-        })
+        .collect({ case tile: TileWandBuilder => tile })
+        .foreach(tile =>
+          playerIn.getHeldItem(hand).getItem match {
+            case caster: ItemCaster => tile.craft(playerIn, caster)
+            case item =>
+              if (!tile.tryInsertItemStack(playerIn.getHeldItem(hand), hitX, hitY, hitZ))
+                playerIn.openGui(Main, 0, worldIn, pos.getX, pos.getY, pos.getZ)
+              tile.markDirty()
+          })
     }
     true
   }
@@ -56,7 +57,7 @@ object BlockWandBuilder extends BlockContainer(Material.ROCK) {
   lazy val upgradeByStack: ComponentByStack[WandUpgrade] = getByRegistry(GameRegistry.findRegistry(classOf[WandUpgrade]))
 
 
-  val craftMatrix: Vector[Vector[Option[(ComponentByStack[_], Int)]]] = Vector(
+  lazy val craftMatrix: Vector[Vector[Option[(ComponentByStack[_], Int)]]] = Vector(
     Vector(None, None, None, Some((upgradeByStack, 13)), Some((upgradeByStack, 12))),
     Vector(None, None, Some((upgradeByStack, 4)), Some((capByStack, 1)), Some((upgradeByStack, 11))),
     Vector(None, Some((upgradeByStack, 5)), Some((rodByStack, 0)), Some((upgradeByStack, 6)), None),
@@ -74,13 +75,16 @@ object BlockWandBuilder extends BlockContainer(Material.ROCK) {
           .filter(_._1(stack).nonEmpty)
           .map(_._2)
           .exists { slotIndex =>
-            val takeOne = stack.copy()
-            takeOne.setCount(1)
-            stack.shrink(1)
-            inv.setInventorySlotContents(slotIndex, takeOne)
-            sendUpdates()
-            markDirty()
-            true
+            if (inv.getStackInSlot(slotIndex).isEmpty) {
+              val takeOne = stack.copy()
+              takeOne.setCount(1)
+              stack.shrink(1)
+              inv.setInventorySlotContents(slotIndex, takeOne)
+              sendUpdates()
+              markDirty()
+              true
+            } else
+              false
           }
       } else
         false
