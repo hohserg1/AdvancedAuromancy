@@ -2,11 +2,13 @@ package hohserg.advancedauromancy.wands
 
 import net.minecraftforge.registries.IForgeRegistryEntry
 
-abstract class WandComponentRegistryEntry[A<:WandComponentRegistryEntry[A]] extends IForgeRegistryEntry.Impl[A] {
+abstract class WandComponentRegistryEntry[A <: WandComponentRegistryEntry[A]] extends IForgeRegistryEntry.Impl[A] {
 
-  def name: String
+  def name = getRegistryName.toString
 
-  setRegistryName(name)
+  protected def _name: String
+
+  setRegistryName(_name)
 
   def isDefault = false
 

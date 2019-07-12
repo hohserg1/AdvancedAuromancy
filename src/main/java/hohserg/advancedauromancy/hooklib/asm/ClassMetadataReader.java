@@ -192,7 +192,7 @@ public class ClassMetadataReader {
         @Override public String toString() {
             return "MethodReference{" +
                     "owner='" + owner + '\'' +
-                    ", name='" + name + '\'' +
+                    ", _name='" + name + '\'' +
                     ", desc='" + desc + '\'' +
                     '}';
         }

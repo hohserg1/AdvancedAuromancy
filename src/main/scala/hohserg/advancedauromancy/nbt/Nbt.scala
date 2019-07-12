@@ -2,6 +2,7 @@ package hohserg.advancedauromancy.nbt
 
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt._
+import net.minecraft.util.ResourceLocation
 
 object Nbt {
 
@@ -14,6 +15,7 @@ object Nbt {
   def buildTag(value: Any): NBTBase = {
     value match {
       case v: String => new NBTTagString(v)
+      case rl: ResourceLocation => new NBTTagString(rl.toString)
       case v: Int => new NBTTagInt(v)
       case v: Float => new NBTTagFloat(v)
       case v: Double => new NBTTagDouble(v)

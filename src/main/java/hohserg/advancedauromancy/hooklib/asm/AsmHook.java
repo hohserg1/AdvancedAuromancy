@@ -801,12 +801,12 @@ public class AsmHook implements Cloneable, Comparable<AsmHook> {
             }
 
             if (hook.targetClassName == null) {
-                throw new IllegalStateException("Target class name is not specified. " +
+                throw new IllegalStateException("Target class _name is not specified. " +
                         "Call setTargetClassName() before build().");
             }
 
             if (hook.targetMethodName == null) {
-                throw new IllegalStateException("Target method name is not specified. " +
+                throw new IllegalStateException("Target method _name is not specified. " +
                         "Call setTargetMethodName() before build().");
             }
 
