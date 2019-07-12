@@ -4,10 +4,7 @@ import hohserg.advancedauromancy.client.ModelProvider
 import hohserg.advancedauromancy.items.base.Wand
 import hohserg.advancedauromancy.nbt.Nbt
 import net.minecraft.client.renderer.block.model.ModelResourceLocation
-import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
-import net.minecraft.util.{ActionResult, EnumHand}
-import net.minecraft.world.World
 
 object ItemWandCasting extends Wand("itemwandcasting") with ModelProvider {
 
@@ -30,8 +27,4 @@ object ItemWandCasting extends Wand("itemwandcasting") with ModelProvider {
   }
 
   override lazy val location: ModelResourceLocation = new ModelResourceLocation(getRegistryName, "inventory")
-
-  override def onItemRightClick(world: World, player: EntityPlayer, hand: EnumHand): ActionResult[ItemStack] = {
-    super.onItemRightClick(world, player, hand)
-  }
 }
