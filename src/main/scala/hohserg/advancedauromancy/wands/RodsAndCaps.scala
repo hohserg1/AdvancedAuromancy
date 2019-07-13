@@ -1,7 +1,11 @@
 package hohserg.advancedauromancy.wands
 
 import hohserg.advancedauromancy.core.Main.advancedAuromancyModId
+import hohserg.advancedauromancy.items.ItemWandComponent
+import net.minecraft.item.ItemStack
 import net.minecraft.util.ResourceLocation
+import net.minecraftforge.fml.common.registry.GameRegistry
+import net.minecraftforge.registries.IForgeRegistry
 
 object RodsAndCaps {
 
@@ -17,4 +21,12 @@ object RodsAndCaps {
     override def isDefault = true
   }
 
+  type ComponentByStack[A] = ItemStack => Option[A]
+
+  def getByRegistry[A <: WandComponentRegistryEntry[A]](registry: IForgeRegistry[A]): ComponentByStack[A] =
+    itemStack => Option(registry.getValue(ItemWandComponent.getComponentKey(itemStack))).filter(!_.isDefault)
+
+  lazy val capByStack: ComponentByStack[WandCap] = getByRegistry(GameRegistry.findRegistry(classOf[WandCap]))
+  lazy val rodByStack: ComponentByStack[WandRod] = getByRegistry(GameRegistry.findRegistry(classOf[WandRod]))
+  lazy val upgradeByStack: ComponentByStack[WandUpgrade] = getByRegistry(GameRegistry.findRegistry(classOf[WandUpgrade]))
 }

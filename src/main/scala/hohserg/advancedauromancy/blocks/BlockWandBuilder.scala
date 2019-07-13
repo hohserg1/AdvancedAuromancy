@@ -1,5 +1,7 @@
 package hohserg.advancedauromancy.blocks
 
+import hohserg.advancedauromancy.wands.RodsAndCaps._
+
 import hohserg.advancedauromancy.core.Main
 import hohserg.advancedauromancy.items.{ItemWandCasting, ItemWandComponent}
 import hohserg.advancedauromancy.nbt.Nbt
@@ -19,7 +21,6 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.util.{EnumBlockRenderType, EnumFacing, EnumHand}
 import net.minecraft.world.{World, WorldServer}
 import net.minecraftforge.common.util.Constants
-import net.minecraftforge.fml.common.registry.GameRegistry
 import net.minecraftforge.registries.IForgeRegistry
 import thaumcraft.common.items.casters.ItemCaster
 
@@ -44,17 +45,6 @@ object BlockWandBuilder extends BlockContainer(Material.ROCK) {
   }
 
   override def createNewTileEntity(worldIn: World, meta: Int): TileEntity = new TileWandBuilder
-
-  type ComponentByStack[A] = ItemStack => Option[A]
-
-  def getByRegistry[A <: WandComponentRegistryEntry[A]](registry: IForgeRegistry[A]): ComponentByStack[A] =
-    itemStack => Option(registry.getValue(ItemWandComponent.getComponentKey(itemStack))).filter(!_.isDefault)
-
-  lazy val capByStack: ComponentByStack[WandCap] = getByRegistry(GameRegistry.findRegistry(classOf[WandCap]))
-
-  lazy val rodByStack: ComponentByStack[WandRod] = getByRegistry(GameRegistry.findRegistry(classOf[WandRod]))
-
-  lazy val upgradeByStack: ComponentByStack[WandUpgrade] = getByRegistry(GameRegistry.findRegistry(classOf[WandUpgrade]))
 
 
   lazy val craftMatrix: Vector[Vector[Option[(ComponentByStack[_], Int)]]] = Vector(
