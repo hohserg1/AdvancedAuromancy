@@ -10,9 +10,9 @@ import hohserg.advancedauromancy.foci.FocusMediumOrb
 import hohserg.advancedauromancy.inventory.{ContainerWandBuilder, GuiWandBuilder}
 import hohserg.advancedauromancy.items._
 import hohserg.advancedauromancy.network.ServerPacketHandler
-import hohserg.advancedauromancy.wands.RodsAndCaps.{DefaultCap, DefaultRod}
+import hohserg.advancedauromancy.wands.RodsAndCaps.{DefaultCap, DefaultRod, DefaultUpgrade}
 import hohserg.advancedauromancy.wands.WandRod.identityOnUpdate
-import hohserg.advancedauromancy.wands.{WandCap, WandRod}
+import hohserg.advancedauromancy.wands.{WandCap, WandRod, WandUpgrade}
 import net.minecraft.block.{Block, ITileEntityProvider}
 import net.minecraft.creativetab.CreativeTabs
 import net.minecraft.entity.player.EntityPlayer
@@ -31,6 +31,7 @@ import net.minecraftforge.fml.common.registry.{EntityEntry, GameRegistry}
 import thaumcraft.api.ThaumcraftApi
 import thaumcraft.api.aspects.{Aspect, AspectList}
 import thaumcraft.api.casters.FocusEngine
+import thaumcraft.api.crafting.IDustTrigger
 import thaumcraft.api.research.ResearchCategories
 
 import scala.collection.mutable.ListBuffer
@@ -123,12 +124,20 @@ abstract class CommonProxy extends IGuiHandler {
     ItemWandComponent.loadTexturesFor(e.getRegistry)
   }
 
+  @SubscribeEvent def registerWandUpgrade(e: RegistryEvent.Register[WandUpgrade]): Unit = {
+    e.getRegistry.registerAll(
+      DefaultUpgrade
+    )
+    ItemWandComponent.loadTexturesFor(e.getRegistry)
+  }
+
   @SubscribeEvent def registerEntities(e: RegistryEvent.Register[EntityEntry]): Unit = {
     entityToRegister.foreach(e.getRegistry.register)
   }
 
   def init(event: FMLInitializationEvent): Unit = {
     FocusEngine.registerElement(classOf[FocusMediumOrb], new ResourceLocation(advancedAuromancyModId, "textures/foci/projectile.png"), 11382149)
+    IDustTrigger.registerDustTrigger(new WandBuilderCraft)
   }
 
   def postinit(event: FMLPostInitializationEvent): Unit = {
