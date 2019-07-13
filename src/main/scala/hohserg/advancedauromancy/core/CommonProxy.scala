@@ -75,8 +75,7 @@ abstract class CommonProxy extends IGuiHandler {
       itemsToRegister += new ItemBlock(block).setRegistryName(name)
       block match {
         case container: ITileEntityProvider =>
-          val tile = container.createNewTileEntity(null, 0).getClass
-          tilesToRegister += tile
+          tilesToRegister += container.createNewTileEntity(null, 0).getClass
         case _ =>
       }
     })
