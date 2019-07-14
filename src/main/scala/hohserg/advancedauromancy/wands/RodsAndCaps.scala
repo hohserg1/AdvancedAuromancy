@@ -13,11 +13,11 @@ object RodsAndCaps {
     override def isDefault = true
   }
 
-  object DefaultCap extends WandCap("default_cap", 0.7f, 100)(new ResourceLocation(advancedAuromancyModId + ":rods_and_caps/wand_thaumium_cap")) {
+  object DefaultCap extends WandCap("default_cap", 30, 100)(new ResourceLocation(advancedAuromancyModId + ":rods_and_caps/wand_thaumium_cap")) {
     override def isDefault = true
   }
 
-  object DefaultUpgrade extends WandUpgrade("default_upgrade", 0, (_,_)=>0, 0, WandRod.identityOnUpdate) {
+  object DefaultUpgrade extends WandUpgrade("default_upgrade", 0, (_,_,_)=>0, 0, WandRod.identityOnUpdate) {
     override def isDefault = true
   }
 
