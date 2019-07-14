@@ -29,10 +29,12 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.common.network.{IGuiHandler, NetworkRegistry}
 import net.minecraftforge.fml.common.registry.{EntityEntry, GameRegistry}
 import thaumcraft.api.ThaumcraftApi
+import thaumcraft.api.aspects.Aspect._
 import thaumcraft.api.aspects.{Aspect, AspectList}
 import thaumcraft.api.casters.FocusEngine
 import thaumcraft.api.crafting.IDustTrigger
 import thaumcraft.api.research.ResearchCategories
+import thaumcraft.common.items.casters.ItemFocus
 
 import scala.collection.mutable.ListBuffer
 
@@ -99,11 +101,11 @@ abstract class CommonProxy extends IGuiHandler {
 
   @SubscribeEvent def registerWandCap(e: RegistryEvent.Register[WandCap]): Unit = {
     e.getRegistry.registerAll(
-      WandCap("gold_cap", 0.7f, 100)(),
-      WandCap("thaumium_cap", 0.7f, 100)(),
-      WandCap("void_cap", 0.7f, 100)(),
-      WandCap("auram_cap", 0.7f, 100)(),
-      WandCap("ender_cap", 0.7f, 100)(),
+      WandCap("gold_cap", 0.3f, 100)(),
+      WandCap("thaumium_cap", 0.3f, 100)(),
+      WandCap("void_cap", 0.3f, 100)(),
+      WandCap("auram_cap", 0.3f, 100)(),
+      WandCap("ender_cap", 0.3f, 100)(),
       DefaultCap
     )
     ItemWandComponent.loadTexturesFor(e.getRegistry)

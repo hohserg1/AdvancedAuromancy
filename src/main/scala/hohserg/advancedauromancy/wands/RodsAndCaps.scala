@@ -17,7 +17,7 @@ object RodsAndCaps {
     override def isDefault = true
   }
 
-  object DefaultUpgrade extends WandUpgrade("default_upgrade", 0, 0, 0, WandRod.identityOnUpdate) {
+  object DefaultUpgrade extends WandUpgrade("default_upgrade", 0, (_,_)=>0, 0, WandRod.identityOnUpdate) {
     override def isDefault = true
   }
 

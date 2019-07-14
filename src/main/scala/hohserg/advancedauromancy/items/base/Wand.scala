@@ -34,9 +34,11 @@ abstract class Wand(i: String) extends ItemCaster(i, 0) with IRechargable {
   }
 
   override def getConsumptionModifier(is: ItemStack, player: EntityPlayer, crafting: Boolean): Float = {
-    var consumptionModifier = getCap(is).discount * getUpgrades(is).map(_.discount).product
-    if (player != null) consumptionModifier -= CasterManager.getTotalVisDiscount(player)
-    Math.max(consumptionModifier, 0.1F)
+    val wandDiscount =
+      getCap(is).discount +
+        getUpgrades(is).map(_.additionDiscount(is, player)).sum +
+        (if (player != null) CasterManager.getTotalVisDiscount(player) else 0)
+    Math.max(1 - wandDiscount, 0.1F)
   }
 
   override def consumeVis(itemStack: ItemStack, entityPlayer: EntityPlayer, amount: Float, crafting: Boolean, sim: Boolean): Boolean = {
@@ -49,7 +51,7 @@ abstract class Wand(i: String) extends ItemCaster(i, 0) with IRechargable {
     } else false
   }
 
-  def getMaxVis(itemStack: ItemStack): Int = getRod(itemStack).capacity + getUpgrades(itemStack).map(_.capacity).sum
+  def getMaxVis(itemStack: ItemStack): Int = getRod(itemStack).capacity + getUpgrades(itemStack).map(_.additionCapacity).sum
 
   def setVis(itemStack: ItemStack, amount: Float): Unit
 
