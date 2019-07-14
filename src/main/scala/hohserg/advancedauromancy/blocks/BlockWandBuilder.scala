@@ -1,11 +1,11 @@
 package hohserg.advancedauromancy.blocks
 
-import hohserg.advancedauromancy.wands.RodsAndCaps._
-
 import hohserg.advancedauromancy.core.Main
-import hohserg.advancedauromancy.items.{ItemWandCasting, ItemWandComponent}
+import hohserg.advancedauromancy.items.ItemWandCasting
+import hohserg.advancedauromancy.items.base.Wand._
 import hohserg.advancedauromancy.nbt.Nbt
 import hohserg.advancedauromancy.utils.ItemUtils
+import hohserg.advancedauromancy.wands.RodsAndCaps._
 import hohserg.advancedauromancy.wands._
 import net.minecraft.block.BlockContainer
 import net.minecraft.block.material.Material
@@ -21,7 +21,6 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.util.{EnumBlockRenderType, EnumFacing, EnumHand}
 import net.minecraft.world.{World, WorldServer}
 import net.minecraftforge.common.util.Constants
-import net.minecraftforge.registries.IForgeRegistry
 import thaumcraft.common.items.casters.ItemCaster
 
 object BlockWandBuilder extends BlockContainer(Material.ROCK) {
@@ -119,7 +118,7 @@ object BlockWandBuilder extends BlockContainer(Material.ROCK) {
     def craftRodAndCaps(rodStack: ItemStack, capStack: ItemStack, upgrades: Seq[WandUpgrade]): Option[ItemStack] = {
       capByStack(capStack).flatMap(cap =>
         rodByStack(rodStack).map(rod =>
-          Map("cap" -> cap.name, "rod" -> rod.name, "wandUpgrades" -> upgrades.map(_.name))
+          Map(wandCapKey -> cap.name, wandRodKey -> rod.name, wandUpgradesKey -> upgrades.map(_.name))
         ))
         .map(Nbt.fromMap)
         .map {

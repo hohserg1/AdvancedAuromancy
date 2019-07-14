@@ -1,5 +1,6 @@
 package hohserg.advancedauromancy.items.base
 
+import hohserg.advancedauromancy.items.base.Wand.{wandCapKey, wandRodKey, wandUpgradesKey}
 import hohserg.advancedauromancy.nbt.Nbt
 import hohserg.advancedauromancy.wands._
 import net.minecraft.entity.player.EntityPlayer
@@ -20,7 +21,7 @@ abstract class Wand(i: String) extends ItemCaster(i, 0) with IRechargable {
 
   def getUpgrades(is: ItemStack): List[WandUpgrade] =
     Nbt(is)
-      .getTagList("upgrades", 8)
+      .getTagList(wandUpgradesKey, 8)
       .iterator()
       .asScala
       .collect { case tag: NBTTagString => tag.getString }
@@ -34,11 +35,12 @@ abstract class Wand(i: String) extends ItemCaster(i, 0) with IRechargable {
   }
 
   override def getConsumptionModifier(is: ItemStack, player: EntityPlayer, crafting: Boolean): Float = {
+    val playerDiscount = if (player != null) CasterManager.getTotalVisDiscount(player) else 0
+
     val wandDiscount =
-      getCap(is).discount +
-        getUpgrades(is).map(_.additionDiscount(is, player)).sum +
-        (if (player != null) CasterManager.getTotalVisDiscount(player) else 0)
-    Math.max(1 - wandDiscount, 0.1F)
+      (getCap(is).discount + (if (crafting) 0 else getUpgrades(is).map(_.additionDiscount(is, player, crafting)).sum)) / 100
+
+    Math.max(1 - (wandDiscount + playerDiscount), 0.1F)
   }
 
   override def consumeVis(itemStack: ItemStack, entityPlayer: EntityPlayer, amount: Float, crafting: Boolean, sim: Boolean): Boolean = {
@@ -65,15 +67,22 @@ abstract class Wand(i: String) extends ItemCaster(i, 0) with IRechargable {
 
   def getCap(itemStack: ItemStack): WandCap =
     GameRegistry.findRegistry(classOf[WandCap])
-      .getValue(new ResourceLocation(Nbt(itemStack).getString("cap")))
+      .getValue(new ResourceLocation(Nbt(itemStack).getString(wandCapKey)))
 
 
   def getRod(itemStack: ItemStack): WandRod =
     GameRegistry.findRegistry(classOf[WandRod])
-      .getValue(new ResourceLocation(Nbt(itemStack).getString("rod")))
+      .getValue(new ResourceLocation(Nbt(itemStack).getString(wandRodKey)))
 
   def getMaxCharge(itemStack: ItemStack, entityLivingBase: EntityLivingBase): Int =
-    getMaxVis(itemStack) * 1000
+    getMaxVis(itemStack)
 
   def showInHud(itemStack: ItemStack, entityLivingBase: EntityLivingBase) = IRechargable.EnumChargeDisplay.NEVER
+}
+
+object Wand {
+  val wandUpgradesKey = "wandUpgrades"
+  val wandCapKey = "cap"
+  val wandRodKey = "rod"
+
 }

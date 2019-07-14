@@ -101,11 +101,11 @@ abstract class CommonProxy extends IGuiHandler {
 
   @SubscribeEvent def registerWandCap(e: RegistryEvent.Register[WandCap]): Unit = {
     e.getRegistry.registerAll(
-      WandCap("gold_cap", 0.3f, 100)(),
-      WandCap("thaumium_cap", 0.3f, 100)(),
-      WandCap("void_cap", 0.3f, 100)(),
-      WandCap("auram_cap", 0.3f, 100)(),
-      WandCap("ender_cap", 0.3f, 100)(),
+      WandCap("gold_cap", 30, 100)(),
+      WandCap("thaumium_cap", 30, 100)(),
+      WandCap("void_cap", 30, 100)(),
+      WandCap("auram_cap", 30, 100)(),
+      WandCap("ender_cap", 30, 100)(),
       DefaultCap
     )
     ItemWandComponent.loadTexturesFor(e.getRegistry)
@@ -131,12 +131,12 @@ abstract class CommonProxy extends IGuiHandler {
       WandUpgrade("elemental_plating_" + aspect.getTag,
         0,
         (stack, player) => {
-          ItemWandCasting.getFocusStackOption(stack)
-            .map(ItemFocus.getPackage)
-            .map(_.getFocusEffects.map(_.getAspect))
-            .map(aspects =>
-              0.05f * aspects.count(_ == aspect) / aspects.length
-            ).getOrElse(0)
+            ItemWandCasting.getFocusStackOption(stack)
+              .map(ItemFocus.getPackage)
+              .map(_.getFocusEffects.map(_.getAspect))
+              .map(aspects =>
+                5 * aspects.count(_ == aspect) / aspects.length
+              ).getOrElse(0)
         }, 50, WandRod.identityOnUpdate
       )
     }
