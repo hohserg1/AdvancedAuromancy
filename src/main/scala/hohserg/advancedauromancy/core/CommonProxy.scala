@@ -127,7 +127,27 @@ abstract class CommonProxy extends IGuiHandler {
   }
 
   @SubscribeEvent def registerWandUpgrade(e: RegistryEvent.Register[WandUpgrade]): Unit = {
+    def elementalPlatingOf(aspect: Aspect) = {
+      WandUpgrade("elemental_plating_" + aspect.getTag,
+        0,
+        (stack, player) => {
+          ItemWandCasting.getFocusStackOption(stack)
+            .map(ItemFocus.getPackage)
+            .map(_.getFocusEffects.map(_.getAspect))
+            .map(aspects =>
+              0.05f * aspects.count(_ == aspect) / aspects.length
+            ).getOrElse(0)
+        }, 50, WandRod.identityOnUpdate
+      )
+    }
+
     e.getRegistry.registerAll(
+      elementalPlatingOf(AIR),
+      elementalPlatingOf(EARTH),
+      elementalPlatingOf(ENTROPY),
+      elementalPlatingOf(ORDER),
+      elementalPlatingOf(FIRE),
+      elementalPlatingOf(COLD),
       DefaultUpgrade
     )
     ItemWandComponent.loadTexturesFor(e.getRegistry)
@@ -144,7 +164,7 @@ abstract class CommonProxy extends IGuiHandler {
 
   def postinit(event: FMLPostInitializationEvent): Unit = {
     ResearchCategories.registerCategory(advancedAuromancyModId.toUpperCase, "FLUX",
-      new AspectList().add(Aspect.AURA, 1).add(Aspect.CRAFT, 1).add(Aspect.MAGIC, 1),
+      new AspectList().add(AURA, 1).add(CRAFT, 1).add(MAGIC, 1),
       new ResourceLocation(advancedAuromancyModId, "textures/icon.png"),
       new ResourceLocation(advancedAuromancyModId, "textures/background.png")
     )
