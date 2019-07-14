@@ -130,7 +130,10 @@ abstract class CommonProxy extends IGuiHandler {
     def elementalPlatingOf(aspect: Aspect) = {
       WandUpgrade("elemental_plating_" + aspect.getTag,
         0,
-        (stack, player) => {
+        (stack, player, crafting) => {
+          if (crafting)
+            0
+          else
             ItemWandCasting.getFocusStackOption(stack)
               .map(ItemFocus.getPackage)
               .map(_.getFocusEffects.map(_.getAspect))
