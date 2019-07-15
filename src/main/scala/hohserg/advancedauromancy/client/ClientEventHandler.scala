@@ -6,15 +6,18 @@ import java.text.DecimalFormat
 import hohserg.advancedauromancy.client.render.simpleItem.{SimpleTexturedModelProvider, TexturedModel}
 import hohserg.advancedauromancy.client.render.wand.WandModel
 import hohserg.advancedauromancy.core.Main
-import hohserg.advancedauromancy.items.ItemWandCasting
 import hohserg.advancedauromancy.items.base.Wand
+import hohserg.advancedauromancy.items.{ItemEnderWandCasting, ItemWandCasting}
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui._
 import net.minecraft.client.renderer.block.model.{IBakedModel, ModelResourceLocation}
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.util.ResourceLocation
+import net.minecraft.util.text.TextFormatting
+import net.minecraft.util.text.translation.I18n
 import net.minecraftforge.client.event.{GuiOpenEvent, ModelBakeEvent, TextureStitchEvent}
+import net.minecraftforge.event.entity.player.ItemTooltipEvent
 import net.minecraftforge.fml.common.eventhandler.{EventPriority, SubscribeEvent}
 import net.minecraftforge.fml.common.gameevent.TickEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase
@@ -28,6 +31,26 @@ import scala.util.Try
 
 class ClientEventHandler extends GuiScreen {
   mc = Minecraft.getMinecraft
+
+  lazy val visChargeLabel = I18n.translateToLocal("tc.charge")
+
+  @SubscribeEvent(priority = EventPriority.LOWEST)
+  def onTooltip(e: ItemTooltipEvent): Unit = {
+    import collection.JavaConverters._
+    val stack = e.getItemStack
+    stack.getItem match {
+      case wand: Wand =>
+        if (stack.getItem == ItemEnderWandCasting)
+          e.getToolTip add TextFormatting.AQUA + "Ender vis net owner is " + Main.proxy.enderVisNet.getName(stack).getOrElse("")
+        e.getToolTip.set(0, I18n.translateToLocal(wand.getCap(stack).name) + " " + I18n.translateToLocal(wand.getRod(stack).name))
+        e.getToolTip.set(e.getToolTip.asScala.indexWhere((param: String) => param.contains(visChargeLabel)), TextFormatting.YELLOW + visChargeLabel + " " + getVisForShow(stack, wand))
+        e.getToolTip.add("Avarage crafting vis cost is " + wand.getConsumptionModifier(stack, e.getEntityPlayer, crafting = true))
+        e.getToolTip.add("Avarage casting vis cost is " + wand.getConsumptionModifier(stack, e.getEntityPlayer, crafting = false))
+        e.getToolTip.add("Upgrades: " + (if (GuiScreen.isShiftKeyDown) wand.getUpgrades(stack) else "press Shift"))
+      case _ =>
+    }
+
+  }
 
   @SubscribeEvent
   def renderTick(event: TickEvent.RenderTickEvent) {
@@ -51,7 +74,6 @@ class ClientEventHandler extends GuiScreen {
   def renderCastingWandHud(wandstack: ItemStack): Unit = {
     wandstack.getItem match {
       case wand: Wand =>
-
         glPushMatrix()
 
         val sr = new ScaledResolution(Minecraft.getMinecraft)
@@ -74,16 +96,12 @@ class ClientEventHandler extends GuiScreen {
 
         val loc = (30.0F * cur / max).toInt
 
-        glPushMatrix()
         val ac = new Color(Aspect.AURA.getColor)
         glColor4f(ac.getRed / 255.0F, ac.getGreen / 255.0F, ac.getBlue / 255.0F, 0.8F)
         UtilsFX.drawTexturedQuad(-4.0F, 35 - loc, 104.0F, 0.0F, 8.0F, loc, -90.0D)
         glColor4f(1.0F, 1.0F, 1.0F, 1.0F)
-        glPopMatrix()
 
-        glPushMatrix()
         UtilsFX.drawTexturedQuad(-8.0F, -3.0F, 72.0F, 0.0F, 16.0F, 42.0F, -90.0D)
-        glPopMatrix()
 
         glColor4f(1, 1, 1, 1)
 
@@ -94,13 +112,17 @@ class ClientEventHandler extends GuiScreen {
         if (mc.player.isSneaking) {
           GL11.glPushMatrix()
           GL11.glRotatef(-90, 0, 0, 1)
-          mc.ingameGUI.drawString(mc.fontRenderer, visCountFormat format wand.getVis(wandstack), -32, -4, 16777215)
+          mc.ingameGUI.drawString(mc.fontRenderer, getVisForShow(wandstack, wand), -32, -4, 16777215)
           GL11.glPopMatrix()
         }
       case _ =>
 
     }
 
+  }
+
+  private def getVisForShow(wandstack: ItemStack, wand: Wand) = {
+    visCountFormat format wand.getVis(wandstack)
   }
 
   @SubscribeEvent

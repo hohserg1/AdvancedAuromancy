@@ -3,7 +3,7 @@ package hohserg.advancedauromancy.core
 import codechicken.lib.packet.PacketCustom
 import hohserg.advancedauromancy.blocks.BlockWandBuilder
 import hohserg.advancedauromancy.client.render.TileWandBuilderSpecialRenderer
-import hohserg.advancedauromancy.client.{ClientEventHandler, ModelProvider, ResearchCatsEditor, TooltipHandler}
+import hohserg.advancedauromancy.client.{ClientEventHandler, ModelProvider, ResearchCatsEditor}
 import hohserg.advancedauromancy.core.Main.advancedAuromancyModId
 import hohserg.advancedauromancy.endervisnet.ClientEnderVisNet
 import hohserg.advancedauromancy.network.ClientPacketHandler
