@@ -17,6 +17,8 @@ import thaumcraft.common.items.casters.{CasterManager, ItemCaster, ItemFocus}
 import scala.collection.JavaConverters._
 
 abstract class Wand(i: String) extends ItemCaster(i, 0) with IRechargable {
+  def addVis(stack: ItemStack, amount: Float): Unit = setVis(stack, getVis(stack) + amount)
+
   ConfigItems.ITEM_VARIANT_HOLDERS.remove(this)
 
   def getUpgrades(is: ItemStack): List[WandUpgrade] =
@@ -31,7 +33,12 @@ abstract class Wand(i: String) extends ItemCaster(i, 0) with IRechargable {
 
 
   override def onUpdate(is: ItemStack, w: World, e: Entity, slot: Int, currentItem: Boolean): Unit = {
-
+    e match {
+      case player: EntityPlayer =>
+        getRod(is).onUpdate(is, player)
+        getUpgrades(is).foreach(_.onUpdate(is, player))
+      case _ =>
+    }
   }
 
   override def getConsumptionModifier(is: ItemStack, player: EntityPlayer, crafting: Boolean): Float = {

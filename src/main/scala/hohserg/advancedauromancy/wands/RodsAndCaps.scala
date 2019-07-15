@@ -2,6 +2,8 @@ package hohserg.advancedauromancy.wands
 
 import hohserg.advancedauromancy.core.Main.advancedAuromancyModId
 import hohserg.advancedauromancy.items.ItemWandComponent
+import hohserg.advancedauromancy.wands.WandRod.identityOnUpdate
+import hohserg.advancedauromancy.wands.WandUpgrade.identityDiscount
 import net.minecraft.item.ItemStack
 import net.minecraft.util.ResourceLocation
 import net.minecraftforge.fml.common.registry.GameRegistry
@@ -9,7 +11,7 @@ import net.minecraftforge.registries.IForgeRegistry
 
 object RodsAndCaps {
 
-  object DefaultRod extends WandRod("default_rod", 100, 0, WandRod.identityOnUpdate)(new ResourceLocation(advancedAuromancyModId + ":rods_and_caps/wand_silverwood_rod")) {
+  object DefaultRod extends WandRod("default_rod", 100, 0, identityOnUpdate)(new ResourceLocation(advancedAuromancyModId + ":rods_and_caps/wand_silverwood_rod")) {
     override def isDefault = true
   }
 
@@ -17,7 +19,7 @@ object RodsAndCaps {
     override def isDefault = true
   }
 
-  object DefaultUpgrade extends WandUpgrade("default_upgrade", 0, (_,_,_)=>0, 0, WandRod.identityOnUpdate) {
+  object DefaultUpgrade extends WandUpgrade("default_upgrade", 0, identityDiscount, 0, identityOnUpdate) {
     override def isDefault = true
   }
 

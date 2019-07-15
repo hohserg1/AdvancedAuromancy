@@ -9,9 +9,11 @@ import hohserg.advancedauromancy.endervisnet.EnderVisNet
 import hohserg.advancedauromancy.foci.FocusMediumOrb
 import hohserg.advancedauromancy.inventory.{ContainerWandBuilder, GuiWandBuilder}
 import hohserg.advancedauromancy.items._
+import hohserg.advancedauromancy.items.base.Wand
 import hohserg.advancedauromancy.network.ServerPacketHandler
 import hohserg.advancedauromancy.wands.RodsAndCaps.{DefaultCap, DefaultRod, DefaultUpgrade}
-import hohserg.advancedauromancy.wands.WandRod.identityOnUpdate
+import hohserg.advancedauromancy.wands.WandRod.{apply => _, _}
+import hohserg.advancedauromancy.wands.WandUpgrade._
 import hohserg.advancedauromancy.wands.{WandCap, WandRod, WandUpgrade}
 import net.minecraft.block.{Block, ITileEntityProvider}
 import net.minecraft.creativetab.CreativeTabs
@@ -35,6 +37,7 @@ import thaumcraft.api.casters.FocusEngine
 import thaumcraft.api.crafting.IDustTrigger
 import thaumcraft.api.research.ResearchCategories
 import thaumcraft.common.items.casters.ItemFocus
+import thaumcraft.common.world.aura.AuraHandler
 
 import scala.collection.mutable.ListBuffer
 
@@ -140,7 +143,7 @@ abstract class CommonProxy extends IGuiHandler {
               .map(aspects =>
                 5 * aspects.count(_ == aspect) / aspects.length
               ).getOrElse(0)
-        }, 50, WandRod.identityOnUpdate
+        }, 50, identityOnUpdate
       )
     }
 
@@ -151,6 +154,14 @@ abstract class CommonProxy extends IGuiHandler {
       elementalPlatingOf(ORDER),
       elementalPlatingOf(FIRE),
       elementalPlatingOf(COLD),
+      WandUpgrade("capacity_intercalation", 50, identityDiscount, 100, identityOnUpdate),
+      WandUpgrade("vis_absorption ", 0, identityDiscount, 100, (stack, player) =>
+        if (player.world.rand.nextInt(100) == 0)
+          stack.getItem match {
+            case wand: Wand => wand.addVis(stack, AuraHandler.drainVis(player.world, player.getPosition, 1, false))
+            case _ =>
+          }
+      ),
       DefaultUpgrade
     )
     ItemWandComponent.loadTexturesFor(e.getRegistry)
