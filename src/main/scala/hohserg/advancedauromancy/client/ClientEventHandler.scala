@@ -1,6 +1,7 @@
 package hohserg.advancedauromancy.client
 
 import java.awt.Color
+import java.text.DecimalFormat
 
 import hohserg.advancedauromancy.client.render.simpleItem.{SimpleTexturedModelProvider, TexturedModel}
 import hohserg.advancedauromancy.client.render.wand.WandModel
@@ -40,11 +41,12 @@ class ClientEventHandler extends GuiScreen {
       }
   }
 
-  lazy private val particleTexture = new ResourceLocation(Main.advancedAuromancyModId, "textures/particle/particle.png")
+  lazy val particleTexture = new ResourceLocation(Main.advancedAuromancyModId, "textures/particle/particle.png")
 
 
-  lazy private val hudTexture = new ResourceLocation("thaumcraft", "textures/gui/hud.png")
+  lazy val hudTexture = new ResourceLocation("thaumcraft", "textures/gui/hud.png")
 
+  val visCountFormat = new DecimalFormat("#######.#")
 
   def renderCastingWandHud(wandstack: ItemStack): Unit = {
     wandstack.getItem match {
@@ -83,11 +85,18 @@ class ClientEventHandler extends GuiScreen {
         UtilsFX.drawTexturedQuad(-8.0F, -3.0F, 72.0F, 0.0F, 16.0F, 42.0F, -90.0D)
         glPopMatrix()
 
-        glColor4f(1,1,1,1)
+        glColor4f(1, 1, 1, 1)
 
         glPopMatrix()
 
         GL11.glDisable(3042)
+
+        if (mc.player.isSneaking) {
+          GL11.glPushMatrix()
+          GL11.glRotatef(-90, 0, 0, 1)
+          mc.ingameGUI.drawString(mc.fontRenderer, visCountFormat format wand.getVis(wandstack), -32, -4, 16777215)
+          GL11.glPopMatrix()
+        }
       case _ =>
 
     }
