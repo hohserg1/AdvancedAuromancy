@@ -12,4 +12,6 @@ abstract class WandComponentRegistryEntry[A <: WandComponentRegistryEntry[A]] ex
 
   def isDefault = false
 
+  override def toString: String = getClass.getSimpleName + "(" + name + ")"
+
 }
