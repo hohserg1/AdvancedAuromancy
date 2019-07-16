@@ -26,7 +26,6 @@ class ClientProxy extends CommonProxy {
     MinecraftForge.EVENT_BUS.register(new ClientEventHandler)
     MinecraftForge.EVENT_BUS.register(new ResearchCatsEditor)
     //MinecraftForge.EVENT_BUS.register(new VisWorldHandler.ClientHandler)
-    MinecraftForge.EVENT_BUS.register(new TooltipHandler)
   }
 
   override def init(event: FMLInitializationEvent): Unit = {
