@@ -18,14 +18,14 @@ import net.minecraft.util.{EnumBlockRenderType, EnumFacing, EnumHand}
 import net.minecraft.world.World
 import thaumcraft.common.items.casters.ItemCaster
 
-object BlockWandBuilder extends BlockContainer(Material.ROCK) {
+object BlockWandBuilder extends BlockContainer(Material.ROCK) with DropOnBreak{
 
   override def getRenderType(state: IBlockState) = EnumBlockRenderType.MODEL
 
   override def onBlockActivated(worldIn: World, pos: BlockPos, state: IBlockState, playerIn: EntityPlayer, hand: EnumHand, facing: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): Boolean = {
     if (!worldIn.isRemote) {
       Option(worldIn.getTileEntity(pos))
-        .collect({ case tile: TileWandBuilder => tile })
+        .collect { case tile: TileWandBuilder => tile }
         .foreach(tile =>
           playerIn.getHeldItem(hand).getItem match {
             case caster: ItemCaster => tile.craft(playerIn, caster)
