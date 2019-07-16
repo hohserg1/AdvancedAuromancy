@@ -1,5 +1,6 @@
 package hohserg.advancedauromancy.blocks
 
+import hohserg.advancedauromancy.blocks.BaseInventoryTile.SyncItemStackHandler
 import javax.annotation.Nonnull
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.network.NetworkManager
@@ -10,22 +11,18 @@ import net.minecraft.world.WorldServer
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.items.{CapabilityItemHandler, ItemStackHandler}
 
-class BaseInventoryTile(size: Int) extends TileEntity {
-
-  def inv = itemHandler
-
-  private var itemHandler = newItemStackHandler
+class BaseInventoryTile(size: Int, val invFactory: (Int, BaseInventoryTile) => ItemStackHandler = new SyncItemStackHandler(_, _)) extends TileEntity {
+  val inv: ItemStackHandler = invFactory(size, this)
 
   override def writeToNBT(tagCompound: NBTTagCompound): NBTTagCompound = {
     val r = super.writeToNBT(tagCompound)
-    r.merge(itemHandler.serializeNBT())
+    r.merge(inv.serializeNBT())
     r
   }
 
   override def readFromNBT(compound: NBTTagCompound): Unit = {
     super.readFromNBT(compound)
-    itemHandler = newItemStackHandler
-    itemHandler.deserializeNBT(compound)
+    inv.deserializeNBT(compound)
   }
 
   override def getUpdateTag: NBTTagCompound = writeToNBT(new NBTTagCompound)
@@ -37,16 +34,12 @@ class BaseInventoryTile(size: Int) extends TileEntity {
     new SPacketUpdateTileEntity(pos, 3, getUpdateTag)
 
 
-  private def newItemStackHandler = new ItemStackHandler(size) {
-    override def onContentsChanged(slot: Int): Unit = sendUpdates()
-  }
-
   override def hasCapability(@Nonnull cap: Capability[_], side: EnumFacing): Boolean =
     cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY || super.hasCapability(cap, side)
 
   override def getCapability[T](@Nonnull cap: Capability[T], side: EnumFacing): T =
     if (cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY)
-      CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.cast(itemHandler)
+      CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.cast(inv)
     else
       super.getCapability(cap, side)
 
@@ -58,6 +51,12 @@ class BaseInventoryTile(size: Int) extends TileEntity {
         if (chunk != null) chunk.sendPacket(getUpdatePacket)
       case _ =>
     }
+}
 
+object BaseInventoryTile {
+
+  class SyncItemStackHandler(size: Int, baseInventoryTile: BaseInventoryTile) extends ItemStackHandler(size) {
+    override def onContentsChanged(slot: Int): Unit = baseInventoryTile.sendUpdates()
+  }
 
 }
