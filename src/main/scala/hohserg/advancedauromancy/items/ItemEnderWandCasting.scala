@@ -20,6 +20,10 @@ object ItemEnderWandCasting extends Wand("ItemEnderWandCasting".toLowerCase) wit
         if (!nbt.hasKey(enderKeyTag))
           nbt.setString(enderKeyTag, e.getName)
 
+        val nbtVis = ItemWandCasting.getVis(is)
+        if (nbtVis > getVis(is))
+          setVis(is, nbtVis)
+
       case _ =>
     }
 
