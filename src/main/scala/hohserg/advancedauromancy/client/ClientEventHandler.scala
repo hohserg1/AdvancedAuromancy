@@ -86,7 +86,7 @@ class ClientEventHandler extends GuiScreen {
         glClear(256)
         glMatrixMode(5889)
         glLoadIdentity()
-        glOrtho(0.0D, sr.getScaledWidth_double, sr.getScaledHeight_double, 0.0D, 1000.0D, 3000.0D)
+        glOrtho(0, sr.getScaledWidth_double, sr.getScaledHeight_double, 0, 1000, 3000)
         glMatrixMode(5888)
         glEnable(3042)
         glBlendFunc(770, 771)
@@ -95,18 +95,18 @@ class ClientEventHandler extends GuiScreen {
         val max = wand.getMaxVis(wandstack)
         val cur = wand.getVis(wandstack)
 
-        glTranslatef(42, 6, 0.0F)
+        glTranslatef(42, 6, 0)
         glScaled(0.5D, 0.5D, 0.5D)
-        glColor4f(1.0F, 1.0F, 1.0F, 1.0F)
+        glColor4f(1, 1, 1, 1)
 
-        val loc = (30.0F * cur / max).toInt
+        val loc = (30 * cur / max).toInt
 
         val ac = new Color(Aspect.AURA.getColor)
-        glColor4f(ac.getRed / 255.0F, ac.getGreen / 255.0F, ac.getBlue / 255.0F, 0.8F)
-        UtilsFX.drawTexturedQuad(-4.0F, 35 - loc, 104.0F, 0.0F, 8.0F, loc, -90.0D)
-        glColor4f(1.0F, 1.0F, 1.0F, 1.0F)
+        glColor4f(ac.getRed / 255f, ac.getGreen / 255f, ac.getBlue / 255f, 0.8F)
+        UtilsFX.drawTexturedQuad(-4, 35 - loc, 104, 0, 8, loc, -90)
+        glColor4f(1, 1, 1, 1)
 
-        UtilsFX.drawTexturedQuad(-8.0F, -3.0F, 72.0F, 0.0F, 16.0F, 42.0F, -90.0D)
+        UtilsFX.drawTexturedQuad(-8, -3, 72, 0, 16, 42, -90)
 
         glColor4f(1, 1, 1, 1)
 
