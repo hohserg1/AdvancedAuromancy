@@ -4,8 +4,9 @@ import hohserg.advancedauromancy.blocks.BlockWandBuilder.TileWandBuilder
 import hohserg.advancedauromancy.items.base.Wand
 import hohserg.advancedauromancy.wands.RodsAndCaps._
 import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.{Container, InventoryBasic, Slot}
+import net.minecraft.inventory.{Container, Slot}
 import net.minecraft.item.ItemStack
+import net.minecraftforge.items.{IItemHandler, SlotItemHandler}
 
 class ContainerWandBuilder(player: EntityPlayer, tile: TileWandBuilder) extends Container {
 
@@ -70,7 +71,7 @@ class ContainerWandBuilder(player: EntityPlayer, tile: TileWandBuilder) extends 
     } else ItemStack.EMPTY
   }
 
-  class FilteredSlot(predicate: ItemStack => Boolean, inv: InventoryBasic, i: Int, i1: Int, i2: Int) extends Slot(inv, i, i1, i2){
+  class FilteredSlot(predicate: ItemStack => Boolean, inv: IItemHandler, id: Int, x: Int, y: Int) extends SlotItemHandler(inv, id, x, y) {
     override def isItemValid(stack: ItemStack): Boolean = predicate(stack)
   }
 

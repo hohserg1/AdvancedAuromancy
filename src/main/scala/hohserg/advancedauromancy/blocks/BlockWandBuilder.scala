@@ -11,16 +11,11 @@ import net.minecraft.block.BlockContainer
 import net.minecraft.block.material.Material
 import net.minecraft.block.state.IBlockState
 import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.InventoryBasic
 import net.minecraft.item.ItemStack
-import net.minecraft.nbt.{NBTTagCompound, NBTTagList}
-import net.minecraft.network.NetworkManager
-import net.minecraft.network.play.server.SPacketUpdateTileEntity
 import net.minecraft.tileentity.TileEntity
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.{EnumBlockRenderType, EnumFacing, EnumHand}
-import net.minecraft.world.{World, WorldServer}
-import net.minecraftforge.common.util.Constants
+import net.minecraft.world.World
 import thaumcraft.common.items.casters.ItemCaster
 
 object BlockWandBuilder extends BlockContainer(Material.ROCK) {
@@ -54,7 +49,7 @@ object BlockWandBuilder extends BlockContainer(Material.ROCK) {
     Vector(Some((upgradeByStack, 8)), Some((upgradeByStack, 9)), None, None, None)
   )
 
-  class TileWandBuilder extends TileEntity {
+  class TileWandBuilder extends BaseInventoryTile(14) {
 
     def tryInsertItemStack(stack: ItemStack, hitX: Float, hitY: Float, hitZ: Float): Boolean = {
       if (hitY == 1 && resultSlot.isEmpty) {
@@ -68,7 +63,7 @@ object BlockWandBuilder extends BlockContainer(Material.ROCK) {
               val takeOne = stack.copy()
               takeOne.setCount(1)
               stack.shrink(1)
-              inv.setInventorySlotContents(slotIndex, takeOne)
+              inv.setStackInSlot(slotIndex, takeOne)
               sendUpdates()
               markDirty()
               true
@@ -104,10 +99,10 @@ object BlockWandBuilder extends BlockContainer(Material.ROCK) {
         craftRodAndCaps(rodSlot, capSlot, upgrades.map(_._1))
           .foreach({
             for {i <- upgrades}
-              inv.decrStackSize(i._2, 1)
+              inv.extractItem(i._2, 1, false)
             for {i <- 0 to 2}
-              inv.decrStackSize(i, 1)
-            inv.setInventorySlotContents(3, _)
+              inv.extractItem(i, 1, false)
+            inv.setStackInSlot(3, _)
           })
         sendUpdates()
         markDirty()
@@ -127,57 +122,6 @@ object BlockWandBuilder extends BlockContainer(Material.ROCK) {
             r.setTagCompound(nbt)
             r
         }
-    }
-
-    val inv = new InventoryBasic("Wand Builder", true, 14)
-
-    override def writeToNBT(tagCompound: NBTTagCompound): NBTTagCompound = {
-      val list = new NBTTagList
-      for {
-        i <- 0 until inv.getSizeInventory
-        item = inv.getStackInSlot(i)
-        if !item.isEmpty
-      } {
-        val comp = new NBTTagCompound
-        comp.setByte("Slot", i.toByte)
-        item.writeToNBT(comp)
-        list.appendTag(comp)
-      }
-      tagCompound.setTag("Items", list)
-
-      super.writeToNBT(tagCompound)
-    }
-
-    override def readFromNBT(tagCompound: NBTTagCompound): Unit = {
-      val list = tagCompound.getTagList("Items", Constants.NBT.TAG_COMPOUND)
-      for (i <- 0 until list.tagCount()) {
-        val comp = list.getCompoundTagAt(i)
-        val j = comp.getByte("Slot") & 255
-        comp.removeTag("Slot")
-        if (j >= 0 && j < inv.getSizeInventory) inv.setInventorySlotContents(j, new ItemStack(comp))
-      }
-
-      super.readFromNBT(tagCompound)
-    }
-
-    override def getUpdateTag: NBTTagCompound = writeToNBT(new NBTTagCompound)
-
-    override def onDataPacket(net: NetworkManager, pkt: SPacketUpdateTileEntity): Unit = {
-      readFromNBT(pkt.getNbtCompound)
-    }
-
-    override def getUpdatePacket: SPacketUpdateTileEntity = {
-      val tagCompound = new NBTTagCompound
-      writeToNBT(tagCompound)
-      new SPacketUpdateTileEntity(pos, 3, tagCompound)
-    }
-
-    def sendUpdates(): Unit = {
-      val packet = getUpdatePacket
-      if (packet != null && world.isInstanceOf[WorldServer]) {
-        val chunk = world.asInstanceOf[WorldServer].getPlayerChunkMap.getEntry(pos.getX >> 4, pos.getZ >> 4)
-        if (chunk != null) chunk.sendPacket(packet)
-      }
     }
   }
 
