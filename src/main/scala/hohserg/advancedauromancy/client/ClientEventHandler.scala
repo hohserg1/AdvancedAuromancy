@@ -44,9 +44,9 @@ class ClientEventHandler extends GuiScreen {
           e.getToolTip add TextFormatting.AQUA + "Ender vis net owner is " + Main.proxy.enderVisNet.getName(stack).getOrElse("")
         e.getToolTip.set(0, I18n.translateToLocal(wand.getCap(stack).name) + " " + I18n.translateToLocal(wand.getRod(stack).name))
         e.getToolTip.set(e.getToolTip.asScala.indexWhere((param: String) => param.contains(visChargeLabel)), TextFormatting.YELLOW + visChargeLabel + " " + getVisForShow(stack, wand))
-        e.getToolTip.add("Avarage crafting vis cost is " + wand.getConsumptionModifier(stack, e.getEntityPlayer, crafting = true))
-        e.getToolTip.add("Avarage casting vis cost is " + wand.getConsumptionModifier(stack, e.getEntityPlayer, crafting = false))
-        e.getToolTip.add("Upgrades: " + (if (GuiScreen.isShiftKeyDown) wand.getUpgrades(stack) else "press Shift"))
+        e.getToolTip.add(TextFormatting.WHITE + "Average crafting vis cost is " + wand.getConsumptionModifier(stack, e.getEntityPlayer, crafting = true))
+        e.getToolTip.add(TextFormatting.WHITE + "Average casting vis cost is " + wand.getConsumptionModifier(stack, e.getEntityPlayer, crafting = false))
+        e.getToolTip.add(TextFormatting.GREEN + "Upgrades: " + (if (GuiScreen.isShiftKeyDown) wand.getUpgrades(stack) else "press Shift"))
       case _ =>
     }
 
