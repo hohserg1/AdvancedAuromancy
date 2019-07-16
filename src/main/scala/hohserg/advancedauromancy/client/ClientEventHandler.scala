@@ -74,6 +74,7 @@ class ClientEventHandler extends GuiScreen {
   def renderCastingWandHud(wandstack: ItemStack): Unit = {
     wandstack.getItem match {
       case wand: Wand =>
+
         glPushMatrix()
 
         val sr = new ScaledResolution(Minecraft.getMinecraft)
@@ -85,7 +86,6 @@ class ClientEventHandler extends GuiScreen {
         glEnable(3042)
         glBlendFunc(770, 771)
 
-        //GL11.glTranslatef(16.0F, 16.0F, 0.0F)
         mc.renderEngine.bindTexture(hudTexture)
         val max = wand.getMaxVis(wandstack)
         val cur = wand.getVis(wandstack)
@@ -111,8 +111,9 @@ class ClientEventHandler extends GuiScreen {
 
         if (mc.player.isSneaking) {
           GL11.glPushMatrix()
+          GL11.glScaled(0.5, 0.5, 0.5)
           GL11.glRotatef(-90, 0, 0, 1)
-          mc.ingameGUI.drawString(mc.fontRenderer, getVisForShow(wandstack, wand), -32, -4, 16777215)
+          mc.ingameGUI.drawString(mc.fontRenderer, getVisForShow(wandstack, wand), -44, 80, 16777215)
           GL11.glPopMatrix()
         }
       case _ =>
