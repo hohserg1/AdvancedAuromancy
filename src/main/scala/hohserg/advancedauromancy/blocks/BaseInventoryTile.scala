@@ -1,7 +1,7 @@
 package hohserg.advancedauromancy.blocks
 
-import hohserg.advancedauromancy.blocks.BaseInventoryTile.SyncItemStackHandler
 import javax.annotation.Nonnull
+import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.network.NetworkManager
 import net.minecraft.network.play.server.SPacketUpdateTileEntity
@@ -11,8 +11,12 @@ import net.minecraft.world.WorldServer
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.items.{CapabilityItemHandler, ItemStackHandler}
 
-class BaseInventoryTile(size: Int, val invFactory: (Int, BaseInventoryTile) => ItemStackHandler = new SyncItemStackHandler(_, _)) extends TileEntity {
-  val inv: ItemStackHandler = invFactory(size, this)
+abstract class BaseInventoryTile(size: Int) extends TileEntity {
+  type ISH <: ItemStackHandler
+
+  def invFactory(size: Int, baseTile: BaseInventoryTile): ISH
+
+  val inv: ISH = invFactory(size, this)
 
   override def writeToNBT(tagCompound: NBTTagCompound): NBTTagCompound = {
     val r = super.writeToNBT(tagCompound)
@@ -55,8 +59,38 @@ class BaseInventoryTile(size: Int, val invFactory: (Int, BaseInventoryTile) => I
 
 object BaseInventoryTile {
 
-  class SyncItemStackHandler(size: Int, baseInventoryTile: BaseInventoryTile) extends ItemStackHandler(size) {
+  trait SyncItemStackHandler extends ItemStackHandler {
+    def baseInventoryTile: BaseInventoryTile
+
     override def onContentsChanged(slot: Int): Unit = baseInventoryTile.sendUpdates()
+
+    override def insertItem(slot: Int, stack: ItemStack, simulate: Boolean): ItemStack = {
+      if (isItemValid(slot, stack))
+        super.insertItem(slot, stack, simulate)
+      else
+        stack
+    }
+  }
+
+  trait LockableItemStackHandler extends ItemStackHandler {
+    var lock = false
+
+    override def insertItem(slot: Int, stack: ItemStack, simulate: Boolean): ItemStack =
+      if (lock)
+        stack
+      else
+        super.insertItem(slot, stack, simulate)
+
+    override def extractItem(slot: Int, amount: Int, simulate: Boolean): ItemStack =
+      if (lock)
+        ItemStack.EMPTY
+      else
+        super.extractItem(slot, amount, simulate)
+
+    override def setStackInSlot(slot: Int, stack: ItemStack): Unit =
+      if (!lock)
+        super.setStackInSlot(slot, stack)
+
   }
 
 }

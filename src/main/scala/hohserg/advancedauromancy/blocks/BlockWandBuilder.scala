@@ -1,5 +1,6 @@
 package hohserg.advancedauromancy.blocks
 
+import hohserg.advancedauromancy.blocks.BaseInventoryTile.{LockableItemStackHandler, SyncItemStackHandler}
 import hohserg.advancedauromancy.core.Main
 import hohserg.advancedauromancy.items.ItemWandCasting
 import hohserg.advancedauromancy.items.base.Wand._
@@ -16,9 +17,13 @@ import net.minecraft.tileentity.TileEntity
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.{EnumBlockRenderType, EnumFacing, EnumHand}
 import net.minecraft.world.World
+import net.minecraftforge.items.ItemStackHandler
+import thaumcraft.api.aspects.Aspect
+import thaumcraft.client.fx.FXDispatcher
 import thaumcraft.common.items.casters.ItemCaster
+import thaumcraft.common.lib.events.ServerEvents
 
-object BlockWandBuilder extends BlockContainer(Material.ROCK) with DropOnBreak{
+object BlockWandBuilder extends BlockContainer(Material.ROCK) with DropOnBreak {
 
   override def getRenderType(state: IBlockState) = EnumBlockRenderType.MODEL
 
@@ -27,13 +32,14 @@ object BlockWandBuilder extends BlockContainer(Material.ROCK) with DropOnBreak{
       Option(worldIn.getTileEntity(pos))
         .collect { case tile: TileWandBuilder => tile }
         .foreach(tile =>
-          playerIn.getHeldItem(hand).getItem match {
-            case caster: ItemCaster => tile.craft(playerIn, caster)
-            case item =>
-              if (!tile.tryInsertItemStack(playerIn.getHeldItem(hand), hitX, hitY, hitZ))
-                playerIn.openGui(Main, 0, worldIn, pos.getX, pos.getY, pos.getZ)
-              tile.markDirty()
-          })
+          if (!tile.inv.lock)
+            playerIn.getHeldItem(hand).getItem match {
+              case caster: ItemCaster => tile.craft(playerIn, caster)
+              case item =>
+                if (!tile.tryInsertItemStack(playerIn.getHeldItem(hand), hitX, hitY, hitZ))
+                  playerIn.openGui(Main, 0, worldIn, pos.getX, pos.getY, pos.getZ)
+                tile.markDirty()
+            })
     }
     true
   }
@@ -49,7 +55,18 @@ object BlockWandBuilder extends BlockContainer(Material.ROCK) with DropOnBreak{
     Vector(Some((upgradeByStack, 8)), Some((upgradeByStack, 9)), None, None, None)
   )
 
+  lazy val checkSlot = craftMatrix.flatten.flatten.map { case (check, slot) => slot -> check }.toMap
+
   class TileWandBuilder extends BaseInventoryTile(14) {
+
+    override type ISH = ItemStackHandler with SyncItemStackHandler with LockableItemStackHandler
+
+    override def invFactory(size: Int, baseTile: BaseInventoryTile): ISH = new ItemStackHandler(14) with SyncItemStackHandler with LockableItemStackHandler {
+      override def baseInventoryTile: BaseInventoryTile = TileWandBuilder.this
+
+      override def isItemValid(slot: Int, stack: ItemStack): Boolean =
+        checkSlot.get(slot).exists(_ (stack).isDefined)
+    }
 
     def tryInsertItemStack(stack: ItemStack, hitX: Float, hitY: Float, hitZ: Float): Boolean = {
       if (hitY == 1 && resultSlot.isEmpty) {
@@ -62,8 +79,10 @@ object BlockWandBuilder extends BlockContainer(Material.ROCK) with DropOnBreak{
             if (inv.getStackInSlot(slotIndex).isEmpty) {
               val takeOne = stack.copy()
               takeOne.setCount(1)
-              stack.shrink(1)
-              inv.setStackInSlot(slotIndex, takeOne)
+
+              if (inv.insertItem(slotIndex, takeOne, simulate = false).isEmpty)
+                stack.shrink(1)
+
               sendUpdates()
               markDirty()
               true
@@ -97,18 +116,48 @@ object BlockWandBuilder extends BlockContainer(Material.ROCK) with DropOnBreak{
         }.flatten
 
         craftRodAndCaps(rodSlot, capSlot, upgrades.map(_._1))
-          .foreach({
-            for {i <- upgrades}
-              inv.extractItem(i._2, 1, false)
-            for {i <- 0 to 2}
-              inv.extractItem(i, 1, false)
-            inv.setStackInSlot(3, _)
-          })
+          .foreach { wand =>
+            inv.lock = true
+            world.addBlockEvent(pos, getBlockType, 5, 1)
+
+
+            ServerEvents.addRunnableServer(world, new Runnable {
+              override def run(): Unit = {
+                inv.lock = false
+
+                println("test")
+                for {i <- upgrades}
+                  inv.extractItem(i._2, 1, simulate = false)
+
+                for {i <- 0 to 2}
+                  inv.extractItem(i, 1, simulate = false)
+                inv.setStackInSlot(3, wand)
+              }
+            }, 20 * 2)
+          }
         sendUpdates()
         markDirty()
-        //world.markAndNotifyBlock(pos,null,)
       }
     }
+
+    override def receiveClientEvent(i: Int, j: Int): Boolean =
+      if (i == 5) {
+        if (world.isRemote) {
+
+          val al = Aspect.getPrimalAspects
+          val mainColor = Aspect.MAGIC.getColor
+          for (i <- 0 to 100) {
+            val color = al.get(world.rand.nextInt(al.size)).getColor
+            FXDispatcher.INSTANCE.visSparkle(
+              pos.getX + world.rand.nextInt(3) - world.rand.nextInt(3),
+              pos.up.getY + world.rand.nextInt(3),
+              pos.getZ + world.rand.nextInt(3) - world.rand.nextInt(3),
+              pos.getX, pos.getY, pos.getZ,
+              if (i % 2 == 0) mainColor else color)
+          }
+        }
+        true
+      } else false
 
     def craftRodAndCaps(rodStack: ItemStack, capStack: ItemStack, upgrades: Seq[WandUpgrade]): Option[ItemStack] = {
       capByStack(capStack).flatMap(cap =>
