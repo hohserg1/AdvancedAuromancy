@@ -7,7 +7,7 @@ import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.entity.{Entity, EntityLivingBase}
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagString
-import net.minecraft.util.ResourceLocation
+import net.minecraft.util.{ActionResult, EnumActionResult, EnumHand, ResourceLocation}
 import net.minecraft.world.World
 import net.minecraftforge.fml.common.registry.GameRegistry
 import thaumcraft.api.items.IRechargable
@@ -80,6 +80,13 @@ abstract class Wand(i: String) extends ItemCaster(i, 0) with IRechargable {
   def getRod(itemStack: ItemStack): WandRod =
     GameRegistry.findRegistry(classOf[WandRod])
       .getValue(new ResourceLocation(Nbt(itemStack).getString(wandRodKey)))
+
+  override def onItemRightClick(world: World, player: EntityPlayer, hand: EnumHand): ActionResult[ItemStack] = {
+    val r = super.onItemRightClick(world, player, hand)
+    if (r.getType == EnumActionResult.SUCCESS)
+      player.setSprinting(false)
+    r
+  }
 
   def getMaxCharge(itemStack: ItemStack, entityLivingBase: EntityLivingBase): Int =
     getMaxVis(itemStack)

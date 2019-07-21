@@ -1,17 +1,16 @@
 package hohserg.advancedauromancy.core
 
 import codechicken.lib.packet.PacketCustom
-import hohserg.advancedauromancy.blocks.BlockWandBuilder
 import hohserg.advancedauromancy.blocks.BlockWandBuilder.TileWandBuilder
+import hohserg.advancedauromancy.blocks.{BlockOverchargePedestal, BlockWandBuilder}
 import hohserg.advancedauromancy.client.render.simpleItem.SimpleTexturedModelProvider.simpletexturemodel
 import hohserg.advancedauromancy.core.Main._
-import hohserg.advancedauromancy.endervisnet.EnderVisNet
 import hohserg.advancedauromancy.foci.FocusMediumOrb
 import hohserg.advancedauromancy.inventory.{ContainerWandBuilder, GuiWandBuilder}
 import hohserg.advancedauromancy.items._
 import hohserg.advancedauromancy.items.base.Wand
 import hohserg.advancedauromancy.network.ServerPacketHandler
-import hohserg.advancedauromancy.wands.RodsAndCaps.{DefaultCap, DefaultRod, DefaultUpgrade}
+import hohserg.advancedauromancy.wands.RodsAndCaps._
 import hohserg.advancedauromancy.wands.WandRod.{apply => _, _}
 import hohserg.advancedauromancy.wands.WandUpgrade._
 import hohserg.advancedauromancy.wands.{WandCap, WandRod, WandUpgrade}
@@ -43,14 +42,12 @@ import scala.collection.mutable.ListBuffer
 
 abstract class CommonProxy extends IGuiHandler {
 
-  def enderVisNet: EnderVisNet
-
   lazy val tab = new CreativeTabs(advancedAuromancyModId) {
     override def getTabIconItem = new ItemStack(Items.APPLE)
   }
 
 
-  protected val blocksToRegister = ListBuffer[Block](BlockWandBuilder)
+  protected val blocksToRegister = ListBuffer[Block](BlockWandBuilder, BlockOverchargePedestal)
   protected val itemsToRegister = ListBuffer[Item](ItemWandCasting, ItemEnderWandCasting, ItemWandComponent, simpletexturemodel)
   protected val tilesToRegister = ListBuffer[Class[_ <: TileEntity]]()
   protected val entityToRegister = ListBuffer[EntityEntry]()
@@ -104,11 +101,11 @@ abstract class CommonProxy extends IGuiHandler {
 
   @SubscribeEvent def registerWandCap(e: RegistryEvent.Register[WandCap]): Unit = {
     e.getRegistry.registerAll(
-      WandCap("gold_cap", 30, 100)(),
-      WandCap("thaumium_cap", 30, 100)(),
-      WandCap("void_cap", 30, 100)(),
-      WandCap("auram_cap", 30, 100)(),
-      WandCap("ender_cap", 30, 100)(),
+      GoldCap,
+      ThaumiumCap,
+      VoidCap,
+      AuramCap,
+      EnderCap,
       DefaultCap
     )
     ItemWandComponent.loadTexturesFor(e.getRegistry)
@@ -116,14 +113,14 @@ abstract class CommonProxy extends IGuiHandler {
 
   @SubscribeEvent def registerWandRod(e: RegistryEvent.Register[WandRod]): Unit = {
     e.getRegistry.registerAll(
-      WandRod("greatwood_rod", 100, 0, identityOnUpdate)(),
-      WandRod("silverwood_rod", 100, 0, identityOnUpdate)(),
-      WandRod("taintwood_rod", 100, 0, identityOnUpdate)(),
+      GreatwoodRod,
+      SilverwoodRod,
+      TaintwoodRod,
 
-      WandRod("birch_rod", 100, 0, identityOnUpdate)(),
-      WandRod("oak_rod", 100, 0, identityOnUpdate)(),
-      WandRod("spruce_rod", 100, 0, identityOnUpdate)(),
-      WandRod("jungle_rod", 100, 0, identityOnUpdate)(),
+      BirchRod,
+      OakRod,
+      SpruceRod,
+      JungleRod,
       DefaultRod
     )
     ItemWandComponent.loadTexturesFor(e.getRegistry)

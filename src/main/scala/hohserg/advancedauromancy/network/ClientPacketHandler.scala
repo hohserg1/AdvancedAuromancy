@@ -12,7 +12,7 @@ class ClientPacketHandler extends IClientPacketHandler{
     packetCustom.getType match {
       case Packet.UpdateVisAmount =>
         val (name, amount, max) = (packetCustom.readString(), packetCustom.readFloat(),  packetCustom.readInt())
-        Main.proxy.enderVisNet.setVis(name,amount,max)
+        EnderVisNet.setVis(name,amount,max)
       case _ =>
     }
 

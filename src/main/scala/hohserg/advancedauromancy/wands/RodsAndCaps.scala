@@ -31,4 +31,19 @@ object RodsAndCaps {
   lazy val capByStack: ComponentByStack[WandCap] = getByRegistry(GameRegistry.findRegistry(classOf[WandCap]))
   lazy val rodByStack: ComponentByStack[WandRod] = getByRegistry(GameRegistry.findRegistry(classOf[WandRod]))
   lazy val upgradeByStack: ComponentByStack[WandUpgrade] = getByRegistry(GameRegistry.findRegistry(classOf[WandUpgrade]))
+
+  object GoldCap extends WandCap("gold_cap", 30, 100)()
+  object ThaumiumCap extends WandCap("thaumium_cap", 30, 100)()
+  object VoidCap extends WandCap("void_cap", 30, 100)()
+  object AuramCap extends WandCap("auram_cap", 30, 100)()
+  object EnderCap extends WandCap("ender_cap", 30, 100)()
+
+  object GreatwoodRod extends WandRod("greatwood_rod", 100, 0, identityOnUpdate)()
+  object SilverwoodRod extends WandRod("silverwood_rod", 100, 0, identityOnUpdate)()
+  object TaintwoodRod extends WandRod("taintwood_rod", 100, 0, identityOnUpdate)()
+
+  object BirchRod extends WandRod("birch_rod", 100, 0, identityOnUpdate)()
+  object OakRod extends WandRod("oak_rod", 100, 0, identityOnUpdate)()
+  object SpruceRod extends WandRod("spruce_rod", 100, 0, identityOnUpdate)()
+  object JungleRod extends WandRod("jungle_rod", 100, 0, identityOnUpdate)()
 }

@@ -2,8 +2,9 @@ package hohserg.advancedauromancy.blocks
 
 import hohserg.advancedauromancy.blocks.BaseInventoryTile.{LockableItemStackHandler, SyncItemStackHandler}
 import hohserg.advancedauromancy.core.Main
-import hohserg.advancedauromancy.items.ItemWandCasting
+import hohserg.advancedauromancy.items.ItemEnderWandCasting.enderKeyTag
 import hohserg.advancedauromancy.items.base.Wand._
+import hohserg.advancedauromancy.items.{ItemEnderWandCasting, ItemWandCasting}
 import hohserg.advancedauromancy.nbt.Nbt
 import hohserg.advancedauromancy.utils.ItemUtils
 import hohserg.advancedauromancy.wands.RodsAndCaps._
@@ -115,7 +116,7 @@ object BlockWandBuilder extends BlockContainer(Material.ROCK) with DropOnBreak {
             upgradeByStack(stack).map(_ -> i)
         }.flatten
 
-        craftRodAndCaps(rodSlot, capSlot, upgrades.map(_._1))
+        craftRodAndCaps(rodSlot, capSlot, upgrades.map(_._1), playerIn)
           .foreach { wand =>
             inv.lock = true
             world.addBlockEvent(pos, getBlockType, 5, 1)
@@ -159,18 +160,20 @@ object BlockWandBuilder extends BlockContainer(Material.ROCK) with DropOnBreak {
         true
       } else false
 
-    def craftRodAndCaps(rodStack: ItemStack, capStack: ItemStack, upgrades: Seq[WandUpgrade]): Option[ItemStack] = {
-      capByStack(capStack).flatMap(cap =>
-        rodByStack(rodStack).map(rod =>
-          Map(wandCapKey -> cap.name, wandRodKey -> rod.name, wandUpgradesKey -> upgrades.map(_.name))
-        ))
-        .map(Nbt.fromMap)
-        .map {
-          nbt =>
-            val r = new ItemStack(ItemWandCasting)
-            r.setTagCompound(nbt)
-            r
+    def craftRodAndCaps(rodStack: ItemStack, capStack: ItemStack, upgrades: Seq[WandUpgrade], playerIn: EntityPlayer): Option[ItemStack] = {
+      capByStack(capStack).flatMap { cap =>
+        rodByStack(rodStack).map { rod =>
+          val data = Map(wandCapKey -> cap.name, wandRodKey -> rod.name, wandUpgradesKey -> upgrades.map(_.name))
+          if (cap == EnderCap)
+            (data + (enderKeyTag -> playerIn.getName)) -> ItemEnderWandCasting
+          else
+            data -> ItemWandCasting
         }
+      }.map { case (data, wand) =>
+        val r = new ItemStack(wand)
+        r.setTagCompound(Nbt.fromMap(data))
+        r
+      }
     }
   }
 

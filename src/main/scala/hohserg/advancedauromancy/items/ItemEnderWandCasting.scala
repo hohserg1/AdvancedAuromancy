@@ -1,7 +1,7 @@
 package hohserg.advancedauromancy.items
 
 import hohserg.advancedauromancy.client.ModelProvider
-import hohserg.advancedauromancy.core.Main
+import hohserg.advancedauromancy.endervisnet.EnderVisNet
 import hohserg.advancedauromancy.items.base.Wand
 import hohserg.advancedauromancy.nbt.Nbt
 import net.minecraft.client.renderer.block.model.ModelResourceLocation
@@ -21,17 +21,25 @@ object ItemEnderWandCasting extends Wand("ItemEnderWandCasting".toLowerCase) wit
           nbt.setString(enderKeyTag, e.getName)
 
         val nbtVis = ItemWandCasting.getVis(is)
-        if (nbtVis > getVis(is))
-          setVis(is, nbtVis)
+        addVis(is, nbtVis)
+        ItemWandCasting.setVis(is, 0)
 
       case _ =>
     }
 
   }
 
-  override def setVis(itemStack: ItemStack, amount: Float): Unit = Main.proxy.enderVisNet.setVis(itemStack, amount)
+  override def setVis(itemStack: ItemStack, amount: Float): Unit =
+    EnderVisNet
+      .getVisNet(itemStack)
+      .foreach(_.setVis(amount, getMaxVis(itemStack)))
 
-  override def getVis(itemStack: ItemStack): Float = Main.proxy.enderVisNet.getVis(itemStack)
+  override def getVis(itemStack: ItemStack): Float =
+    EnderVisNet
+      .getVisNet(itemStack)
+      .map(_.getVis)
+      .map(math.min(_, getMaxVis(itemStack)))
+      .getOrElse(0)
 
   override lazy val location: ModelResourceLocation = ItemWandCasting.location
 }

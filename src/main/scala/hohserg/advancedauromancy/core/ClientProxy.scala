@@ -1,11 +1,10 @@
 package hohserg.advancedauromancy.core
 
 import codechicken.lib.packet.PacketCustom
-import hohserg.advancedauromancy.blocks.BlockWandBuilder
-import hohserg.advancedauromancy.client.render.TileWandBuilderSpecialRenderer
+import hohserg.advancedauromancy.blocks.{BlockOverchargePedestal, BlockWandBuilder}
+import hohserg.advancedauromancy.client.render.{TileOverchargePedestalSpecialRenderer, TileWandBuilderSpecialRenderer}
 import hohserg.advancedauromancy.client.{ClientEventHandler, ModelProvider, ResearchCatsEditor}
 import hohserg.advancedauromancy.core.Main.advancedAuromancyModId
-import hohserg.advancedauromancy.endervisnet.ClientEnderVisNet
 import hohserg.advancedauromancy.network.ClientPacketHandler
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.block.model.ModelResourceLocation
@@ -17,15 +16,12 @@ import net.minecraftforge.fml.common.event.{FMLInitializationEvent, FMLPreInitia
 
 class ClientProxy extends CommonProxy {
 
-  override lazy val enderVisNet = new ClientEnderVisNet
-
   override def preinit(event: FMLPreInitializationEvent): Unit = {
     super.preinit(event)
 
     PacketCustom.assignHandler(advancedAuromancyModId, new ClientPacketHandler)
     MinecraftForge.EVENT_BUS.register(new ClientEventHandler)
     MinecraftForge.EVENT_BUS.register(new ResearchCatsEditor)
-    //MinecraftForge.EVENT_BUS.register(new VisWorldHandler.ClientHandler)
   }
 
   override def init(event: FMLInitializationEvent): Unit = {
@@ -48,5 +44,6 @@ class ClientProxy extends CommonProxy {
       }
     )
     ClientRegistry.bindTileEntitySpecialRenderer(classOf[BlockWandBuilder.TileWandBuilder], new TileWandBuilderSpecialRenderer)
+    ClientRegistry.bindTileEntitySpecialRenderer(classOf[BlockOverchargePedestal.TileOverchargePedestal], new TileOverchargePedestalSpecialRenderer)
   }
 }

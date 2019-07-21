@@ -41,7 +41,7 @@ class ClientEventHandler extends GuiScreen {
     stack.getItem match {
       case wand: Wand =>
         if (stack.getItem == ItemEnderWandCasting)
-          e.getToolTip add TextFormatting.AQUA + "Ender vis net owner is " + Main.proxy.enderVisNet.getName(stack).getOrElse("")
+          e.getToolTip add TextFormatting.AQUA + "Ender vis net owner is " + EnderVisNet.getName(stack).getOrElse("")
         e.getToolTip.set(0, I18n.translateToLocal(wand.getCap(stack).name) + " " + I18n.translateToLocal(wand.getRod(stack).name))
         e.getToolTip.set(e.getToolTip.asScala.indexWhere((param: String) => param.contains(visChargeLabel)), TextFormatting.YELLOW + visChargeLabel + " " + getVisForShow(stack, wand))
         e.getToolTip.add(TextFormatting.WHITE + "Average crafting vis cost is " + wand.getConsumptionModifier(stack, e.getEntityPlayer, crafting = true))

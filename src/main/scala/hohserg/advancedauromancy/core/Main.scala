@@ -6,13 +6,12 @@ import net.minecraftforge.fml.common.{Mod, SidedProxy}
 
 @Mod(name = "AdvancedAuromancy", modid = advancedAuromancyModId, version = "1.0", modLanguage = "scala", dependencies = "required-after:thaumcraft")
 object Main {
-  @SidedProxy(clientSide = "hohserg.advancedauromancy.core.ClientProxy", serverSide = "hohserg.advancedauromancy.core.ServerProxy")
+  @SidedProxy(clientSide = "hohserg.advancedauromancy.core.ClientProxy", serverSide = "hohserg.advancedauromancy.core.CommonProxy")
   var proxy: CommonProxy = _
 
   final val advancedAuromancyModId = "advancedauromancy"
 
   @Mod.EventHandler def preinit(event: FMLPreInitializationEvent): Unit = proxy.preinit(event)
-
 
   @Mod.EventHandler def init(event: FMLInitializationEvent): Unit = proxy.init(event)
 
