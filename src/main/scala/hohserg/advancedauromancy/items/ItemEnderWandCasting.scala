@@ -31,12 +31,12 @@ object ItemEnderWandCasting extends Wand("ItemEnderWandCasting".toLowerCase) wit
 
   override def setVis(itemStack: ItemStack, amount: Float): Unit =
     EnderVisNet
-      .getVisNet(itemStack)
+      .getVisNetByStack(itemStack)
       .foreach(_.setVis(amount, getMaxVis(itemStack)))
 
   override def getVis(itemStack: ItemStack): Float =
     EnderVisNet
-      .getVisNet(itemStack)
+      .getVisNetByStack(itemStack)
       .map(_.getVis)
       .map(math.min(_, getMaxVis(itemStack)))
       .getOrElse(0)

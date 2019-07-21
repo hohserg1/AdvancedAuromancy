@@ -5,6 +5,7 @@ import hohserg.advancedauromancy.blocks.BlockWandBuilder.TileWandBuilder
 import hohserg.advancedauromancy.blocks.{BlockOverchargePedestal, BlockWandBuilder}
 import hohserg.advancedauromancy.client.render.simpleItem.SimpleTexturedModelProvider.simpletexturemodel
 import hohserg.advancedauromancy.core.Main._
+import hohserg.advancedauromancy.endervisnet.EnderVisNet
 import hohserg.advancedauromancy.foci.FocusMediumOrb
 import hohserg.advancedauromancy.inventory.{ContainerWandBuilder, GuiWandBuilder}
 import hohserg.advancedauromancy.items._
@@ -57,6 +58,7 @@ abstract class CommonProxy extends IGuiHandler {
     event.getModMetadata.authorList add "hohserg"
 
     MinecraftForge.EVENT_BUS.register(this)
+    MinecraftForge.EVENT_BUS.register(EnderVisNet.eventHandler)
 
     PacketCustom.assignHandler(advancedAuromancyModId, new ServerPacketHandler)
 

@@ -29,7 +29,7 @@ object EnderVisNet {
     }.toOption
   }
 
-  def getVisNet(itemStack: ItemStack): Option[EVNEntry] = getName(itemStack).map(getVisNet)
+  def getVisNetByStack(itemStack: ItemStack): Option[EVNEntry] = getName(itemStack).map(getVisNet)
 
   def getVisNet(name: String): EVNEntry = nets.getOrElseUpdate(name, loadOrCreate(name))
 
@@ -45,26 +45,30 @@ object EnderVisNet {
   class EventHandler {
     @SubscribeEvent
     def onSave(e: WorldEvent.Save): Unit = {
-      println(Thread.currentThread())
-      try {
-        new File(evnSavePath).mkdirs()
-        nets.filter(!_._2.saved).foreach { i =>
-          val oos = new ObjectOutputStream(new FileOutputStream(evnSavePath + i._1))
-          oos.writeObject(i._2)
-          oos.close()
+      if (!e.getWorld.isRemote)
+        try {
+          new File(evnSavePath).mkdirs()
+          nets.filter(!_._2.saved).foreach { i =>
+            val oos = new ObjectOutputStream(new FileOutputStream(evnSavePath + i._1))
+            oos.writeObject(i._2)
+            oos.close()
+          }
+        } catch {
+          case e: Exception => e.printStackTrace()
         }
-      } catch {
-        case e: Exception => e.printStackTrace()
-      }
     }
 
     @SubscribeEvent
     def onPlayerEnter(e: EntityJoinWorldEvent): Unit = {
-      e.getEntity match {
-        case player: EntityPlayer =>
-          0 until player.inventory.getSizeInventory map player.inventory.getStackInSlot filter (_.getItem == ItemEnderWandCasting) flatMap getVisNet foreach (_.updateClient())
-        case _ =>
-      }
+      if (!e.getWorld.isRemote)
+        e.getEntity match {
+          case player: EntityPlayer =>
+            val stacks = 0 until player.inventory.getSizeInventory map player.inventory.getStackInSlot
+            val wandStacks = stacks filter (_.getItem == ItemEnderWandCasting)
+            val evn = wandStacks flatMap getVisNetByStack
+            evn foreach (_.updateClient())
+          case _ =>
+        }
 
     }
   }

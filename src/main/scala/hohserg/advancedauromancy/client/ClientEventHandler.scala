@@ -6,6 +6,7 @@ import java.text.DecimalFormat
 import hohserg.advancedauromancy.client.render.simpleItem.{SimpleTexturedModelProvider, TexturedModel}
 import hohserg.advancedauromancy.client.render.wand.WandModel
 import hohserg.advancedauromancy.core.Main
+import hohserg.advancedauromancy.endervisnet.EnderVisNet
 import hohserg.advancedauromancy.items.base.Wand
 import hohserg.advancedauromancy.items.{ItemEnderWandCasting, ItemWandCasting}
 import net.minecraft.client.Minecraft

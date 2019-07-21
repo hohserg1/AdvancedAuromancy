@@ -77,7 +77,7 @@ object BlockOverchargePedestal extends BlockContainer(Material.ROCK) with DropOn
         itemStack.getItem match {
           case ItemEnderWandCasting =>
             EnderVisNet
-              .getVisNet(itemStack)
+              .getVisNetByStack(itemStack)
               .foreach { net =>
                 val amt = Math.min(5, net.getMaxVis - net.getVis)
                 val drained = AuraHelper.drainVis(world, pos, amt, false)

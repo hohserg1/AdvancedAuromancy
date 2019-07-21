@@ -1,6 +1,8 @@
 package hohserg.advancedauromancy.endervisnet
 
 import hohserg.advancedauromancy.network.Packet
+import net.minecraftforge.fml.common.FMLCommonHandler
+import net.minecraftforge.fml.relauncher.Side
 
 import scala.math.{max, min}
 
@@ -10,8 +12,10 @@ class EVNEntry(val name: String, private var amount: Float, private var maxAmoun
   def setVis(newAmount: Float, newMaxAmount: Int): Unit = {
     maxAmount = max(maxAmount, newMaxAmount)
     amount = min(maxAmount, newAmount)
-    updateClient()
-    saved = false
+    if (FMLCommonHandler.instance().getEffectiveSide == Side.SERVER) {
+      updateClient()
+      saved = false
+    }
   }
 
   def addVis(newAmount: Float, newMaxAmount: Int): Unit = setVis(amount + newAmount, newMaxAmount)
