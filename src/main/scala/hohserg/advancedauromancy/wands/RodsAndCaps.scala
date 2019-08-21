@@ -1,9 +1,12 @@
 package hohserg.advancedauromancy.wands
 
+import hohserg.advancedauromancy.client.render.Cube
 import hohserg.advancedauromancy.core.Main.advancedAuromancyModId
 import hohserg.advancedauromancy.items.ItemWandComponent
+import hohserg.advancedauromancy.items.base.Wand
 import hohserg.advancedauromancy.wands.WandRod.identityOnUpdate
 import hohserg.advancedauromancy.wands.WandUpgrade.identityDiscount
+import net.minecraft.client.Minecraft
 import net.minecraft.item.ItemStack
 import net.minecraft.util.ResourceLocation
 import net.minecraftforge.fml.common.registry.GameRegistry
@@ -19,7 +22,7 @@ object RodsAndCaps {
     override def isDefault = true
   }
 
-  object DefaultUpgrade extends WandUpgrade("default_upgrade", 0, identityDiscount, 0, identityOnUpdate) {
+  object DefaultUpgrade extends WandUpgrade("default_upgrade", 0, identityDiscount, 0, identityOnUpdate)() {
     override def isDefault = true
   }
 
@@ -56,6 +59,13 @@ object RodsAndCaps {
 
   object JungleRod extends WandRod("jungle_rod", 100, 0, identityOnUpdate)()
 
-  object ChargeIndicator extends WandUpgrade("charge_indicator",0,identityDiscount,10,identityOnUpdate,null)
+  object ChargeIndicator extends WandUpgrade("charge_indicator", 0, identityDiscount, 10, identityOnUpdate,
+    stack => quads => {
+      val (charge, maxCharge) = Wand.wand[(Float, Int)](stack)({ wand => wand.getVis(stack) -> wand.getMaxVis(stack) }, 0f -> 1)
+
+      val textureAtlasSprite = Minecraft.getMinecraft.getTextureMapBlocks.getAtlasSprite(advancedAuromancyModId + ":rods_and_caps/wand_charge_indicator")
+      quads ++
+        Cube(-1.1f, 1, 0.1f, 1.1f, 14 * (charge / maxCharge.toFloat), 1.1f, textureAtlasSprite, applyDiffuseLighting = false).scale(0.2f).move(0, 2, 0).toQuads
+    })()
 
 }
