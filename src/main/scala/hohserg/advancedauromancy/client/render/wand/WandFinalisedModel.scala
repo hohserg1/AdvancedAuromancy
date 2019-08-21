@@ -17,7 +17,7 @@ import scala.collection.JavaConverters._
 import scala.collection.mutable
 
 class WandFinalisedModel(val parentModel: IBakedModel) extends BaseFinalisedModel {
-  def isDefined = !itemStack.isEmpty
+  def isDefined: Boolean = !itemStack.isEmpty
 
   var itemStack: ItemStack = ItemStack.EMPTY
 
@@ -56,7 +56,7 @@ object WandFinalisedModel {
 
   private def cap2Builder(texture: TextureAtlasSprite) = Cube(-1, -1, -1, 2, 2, 2, texture).scale(1.2f, 1, 1.2f).scale(fl).move(0, 20, 0).toQuads
 
-  private def rodBuilder(texture: TextureAtlasSprite) = Cube(-1, -1, -1, 2, 18, 2, texture).scale(fl).move(0, 2, 0).toQuads
+  def rodBuilder(texture: TextureAtlasSprite) = Cube(-1, -1, -1, 2, 18, 2, texture).scale(fl).move(0, 2, 0).toQuads
 
 
   type FocusType = Unit //todo: focuses have different type, as simple, advanced, great, and would can have different textures
