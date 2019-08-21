@@ -143,7 +143,7 @@ abstract class CommonProxy extends IGuiHandler {
                 5 * aspects.count(_ == aspect) / aspects.length
               ).getOrElse(0)
         }, 50, identityOnUpdate
-      )
+      )()
     }
 
     e.getRegistry.registerAll(
@@ -153,14 +153,15 @@ abstract class CommonProxy extends IGuiHandler {
       elementalPlatingOf(ORDER),
       elementalPlatingOf(FIRE),
       elementalPlatingOf(COLD),
-      WandUpgrade("capacity_intercalation", 50, identityDiscount, 100, identityOnUpdate),
+      WandUpgrade("capacity_intercalation", 50, identityDiscount, 100, identityOnUpdate)(),
       WandUpgrade("vis_absorption", 0, identityDiscount, 100, (stack, player) =>
         if (player.world.rand.nextInt(100) == 0)
           stack.getItem match {
             case wand: Wand => wand.addVis(stack, AuraHandler.drainVis(player.world, player.getPosition, 1, false))
             case _ =>
           }
-      ),
+      )(),
+      ChargeIndicator,
       DefaultUpgrade
     )
     ItemWandComponent.loadTexturesFor(e.getRegistry)
