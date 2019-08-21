@@ -99,4 +99,9 @@ object Wand {
   val wandCapKey = "cap"
   val wandRodKey = "rod"
 
+  def wand[A](itemStack: ItemStack)(action: Wand => A, orElse: => A = null) = itemStack.getItem match {
+    case wand: Wand => action(wand)
+    case _ => orElse
+  }
+
 }
