@@ -20,9 +20,11 @@ import scala.collection.JavaConverters._
 object ItemWandComponent extends Item with SimpleTexturedModelProvider {
   def loadTexturesFor[A <: WandComponentRegistryEntry[A]](getRegistry: IForgeRegistry[A]): Unit =
     getRegistry
-      .getKeys
+      .getValuesCollection
       .asScala
       .view
+      .filter(!_.isDefault)
+      .map(_.delegate.name())
       .map(textureName)
       .map(new ResourceLocation(_))
       .foreach(ClientEventHandler.registerTexture)
