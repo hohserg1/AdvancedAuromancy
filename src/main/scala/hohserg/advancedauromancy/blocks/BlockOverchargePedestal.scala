@@ -106,13 +106,8 @@ object BlockOverchargePedestal extends BlockContainer(Material.ROCK) with DropOn
       Option(inv.getStackInSlot(0))
         .filter(!_.isEmpty)
         .map(stack =>
-          stack.getItem match {
-            case wand: Wand =>
-              wand.getVis(stack).toInt
-            case _ =>
-              RechargeHelper.getCharge(stack)
-          }
-        )
+          Wand.wand(stack)(wand =>
+            wand.getVis(stack).toInt, RechargeHelper.getCharge(stack)))
         .map(new AspectList().add(Aspect.AURA, _))
         .orNull
 
