@@ -78,8 +78,8 @@ class ClientEventHandler extends GuiScreen {
   val visCountFormat = new DecimalFormat("#######.#")
 
   def renderCastingWandHud(wandstack: ItemStack): Unit = {
-    wandstack.getItem match {
-      case wand: Wand =>
+    Wand.wand(wandstack) {
+      wand =>
 
         glPushMatrix()
 
@@ -122,8 +122,6 @@ class ClientEventHandler extends GuiScreen {
           mc.ingameGUI.drawString(mc.fontRenderer, getVisForShow(wandstack, wand), -44, 80, 16777215)
           GL11.glPopMatrix()
         }
-      case _ =>
-
     }
 
   }
