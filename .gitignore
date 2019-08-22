@@ -10,4 +10,4 @@
 .gradle/
 /src/main/java/itemtransformhelper/
 /src/main/resources/assets/itemtransformhelper/
-
+/temp/
