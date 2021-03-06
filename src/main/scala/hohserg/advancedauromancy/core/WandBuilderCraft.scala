@@ -24,7 +24,6 @@ class WandBuilderCraft extends DustTriggerSimple("FOCUSADVANCED", BlocksTC.arcan
         val woolCarpet = new ItemStack(Item.getItemFromBlock(Blocks.CARPET), 1, 11)
         val slabSilverwood = new ItemStack(Item.getItemFromBlock(BlocksTC.slabSilverwood))
         val plankSilverwood = new ItemStack(Item.getItemFromBlock(BlocksTC.plankSilverwood))
-        ItemStack.EMPTY
 
         val test =
           Vector(
