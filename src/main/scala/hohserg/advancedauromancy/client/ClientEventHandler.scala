@@ -33,14 +33,13 @@ import scala.util.Try
 class ClientEventHandler extends GuiScreen {
   mc = Minecraft.getMinecraft
 
-  lazy val visChargeLabel = I18n.translateToLocal("tc.charge")
-
   @SubscribeEvent(priority = EventPriority.LOWEST)
   def onTooltip(e: ItemTooltipEvent): Unit = {
     import collection.JavaConverters._
     val stack = e.getItemStack
     stack.getItem match {
       case wand: Wand =>
+        val visChargeLabel = I18n.translateToLocal("tc.charge")
         if (stack.getItem == ItemEnderWandCasting)
           e.getToolTip add TextFormatting.AQUA + "Ender vis net owner is " + EnderVisNet.getName(stack).getOrElse("")
         e.getToolTip.set(0, I18n.translateToLocal(wand.getCap(stack).name) + " " + I18n.translateToLocal(wand.getRod(stack).name))
