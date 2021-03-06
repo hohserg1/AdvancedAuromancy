@@ -11,6 +11,7 @@ import hohserg.advancedauromancy.foci.FocusMediumOrb
 import hohserg.advancedauromancy.inventory.{ContainerWandBuilder, GuiWandBuilder}
 import hohserg.advancedauromancy.items._
 import hohserg.advancedauromancy.items.base.Wand
+import hohserg.advancedauromancy.items.charms.ImprovedCharm
 import hohserg.advancedauromancy.network.ServerPacketHandler
 import hohserg.advancedauromancy.wands.RodsAndCaps._
 import hohserg.advancedauromancy.wands.WandRod.{apply => _, _}
@@ -50,7 +51,7 @@ abstract class CommonProxy extends IGuiHandler {
 
 
   protected val blocksToRegister = ListBuffer[Block](BlockWandBuilder, BlockOverchargePedestal)
-  protected val itemsToRegister = ListBuffer[Item](ItemWandCasting, ItemEnderWandCasting, GoldPlate, PrimalCharm, ItemWandComponent, simpletexturemodel)
+  protected val itemsToRegister = ListBuffer[Item](ItemWandCasting, ItemEnderWandCasting, GoldPlate, ImprovedCharm, ItemWandComponent, simpletexturemodel)
   protected val tilesToRegister = ListBuffer[Class[_ <: TileEntity]]()
   protected val entityToRegister = ListBuffer[EntityEntry]()
 

@@ -3,7 +3,8 @@ package hohserg.advancedauromancy.blocks
 import hohserg.advancedauromancy.blocks.BaseInventoryTile.{LockableItemStackHandler, SyncItemStackHandler}
 import hohserg.advancedauromancy.core.Main
 import hohserg.advancedauromancy.items.base.Wand._
-import hohserg.advancedauromancy.items.{ItemWandCasting, PrimalCharm}
+import hohserg.advancedauromancy.items.ItemWandCasting
+import hohserg.advancedauromancy.items.charms.ImprovedCharm
 import hohserg.advancedauromancy.nbt.Nbt
 import hohserg.advancedauromancy.utils.ItemUtils
 import hohserg.advancedauromancy.wands.RodsAndCaps._
@@ -55,7 +56,7 @@ object BlockWandBuilder extends BlockContainer(Material.ROCK) with DropOnBreak {
 
     def cap(v: Int) = Some((capByStack.andThen(_.isDefined), v))
 
-    def capOrCharm(v: Int) = Some(((is: ItemStack) => capByStack(is).isDefined || is.getItem == PrimalCharm, v))
+    def capOrCharm(v: Int) = Some(((is: ItemStack) => capByStack(is).isDefined || is.getItem == ImprovedCharm, v))
 
     def rodUpgOrCap(v: Int) = Some(((is: ItemStack) => rodUpgradeByStack(is).isDefined || capByStack(is).isDefined, v))
 
@@ -122,7 +123,7 @@ object BlockWandBuilder extends BlockContainer(Material.ROCK) with DropOnBreak {
 
       for {
         rod <- rodByStack(inv(0))
-        if inv(1).getItem == PrimalCharm
+        if inv(1).getItem == ImprovedCharm
         cap1 <- capByStack(inv(2))
         cap2 <- capByStack(inv(4))
         cap3 <- capByStack(inv(6))
