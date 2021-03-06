@@ -19,16 +19,17 @@ import net.minecraft.util.text.TextFormatting
 import net.minecraft.util.text.translation.I18n
 import net.minecraftforge.client.event.{GuiOpenEvent, ModelBakeEvent, TextureStitchEvent}
 import net.minecraftforge.event.entity.player.ItemTooltipEvent
+import net.minecraftforge.fml.client.{FMLClientHandler, GuiConfirmation}
 import net.minecraftforge.fml.common.eventhandler.{EventPriority, SubscribeEvent}
 import net.minecraftforge.fml.common.gameevent.TickEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase
+import net.minecraftforge.fml.relauncher.ReflectionHelper
 import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL11._
 import thaumcraft.api.aspects.Aspect
 import thaumcraft.client.lib.UtilsFX
 
 import scala.collection.mutable.ListBuffer
-import scala.util.Try
 
 class ClientEventHandler extends GuiScreen {
   mc = Minecraft.getMinecraft
@@ -129,15 +130,33 @@ class ClientEventHandler extends GuiScreen {
     visCountFormat format wand.getVis(wandstack)
   }
 
+  private var alreadyEnteredInWorldAutomaticaly = false
+  private var mainMenu:GuiMainMenu = null
+
   @SubscribeEvent
-  def onMainMenu(event: GuiOpenEvent): Unit =
+  def onMainMenu(event: GuiOpenEvent): Unit = if (!alreadyEnteredInWorldAutomaticaly) {
+    System.out.println(event.getGui)
+    val mc = Minecraft.getMinecraft
     event.getGui match {
-      case guiMainMenu: GuiMainMenu => mc.displayGuiScreen(new GuiWorldSelection(guiMainMenu))
+      case menu: GuiMainMenu =>
+        mainMenu = menu
+        mc.displayGuiScreen(new GuiWorldSelection(menu))
       case selection: GuiWorldSelection =>
         val guiListWorldSelection = new GuiListWorldSelection(selection, mc, 100, 100, 32, 100 - 64, 36)
-        Try(guiListWorldSelection.getListEntry(0).joinWorld())
+        try
+          guiListWorldSelection.getListEntry(0).joinWorld()
+        catch {
+          case ignore: Exception =>
+
+        }
+      case _: GuiConfirmation =>
+        alreadyEnteredInWorldAutomaticaly = true
+        ReflectionHelper.findMethod(classOf[GuiConfirmation], "actionPerformed", null, classOf[GuiButton]).invoke(event.getGui, new GuiButton(0, 0, 0, ""))
+        FMLClientHandler.instance.showGuiScreen(mainMenu)
+      case _: GuiIngameMenu => alreadyEnteredInWorldAutomaticaly = true
       case _ =>
     }
+  }
 
   @SubscribeEvent(priority = EventPriority.LOW)
   def stitcherEventPre(event: TextureStitchEvent.Pre): Unit = {
