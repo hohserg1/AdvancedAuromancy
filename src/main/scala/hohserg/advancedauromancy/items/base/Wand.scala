@@ -1,6 +1,6 @@
 package hohserg.advancedauromancy.items.base
 
-import hohserg.advancedauromancy.items.base.Wand.{wandCapKey, wandRodKey, wandUpgradesKey}
+import hohserg.advancedauromancy.items.base.Wand._
 import hohserg.advancedauromancy.nbt.Nbt
 import hohserg.advancedauromancy.wands._
 import net.minecraft.entity.player.EntityPlayer
@@ -10,6 +10,7 @@ import net.minecraft.nbt.NBTTagString
 import net.minecraft.util.{ActionResult, EnumActionResult, EnumHand, ResourceLocation}
 import net.minecraft.world.World
 import net.minecraftforge.fml.common.registry.GameRegistry
+import net.minecraftforge.registries.IForgeRegistry
 import thaumcraft.api.items.IRechargable
 import thaumcraft.common.config.ConfigItems
 import thaumcraft.common.items.casters.{CasterManager, ItemCaster, ItemFocus}
@@ -21,22 +22,29 @@ abstract class Wand(i: String) extends ItemCaster(i, 0) with IRechargable {
 
   ConfigItems.ITEM_VARIANT_HOLDERS.remove(this)
 
-  def getUpgrades(is: ItemStack): List[WandUpgrade] =
+  def getRodUpgrades(is: ItemStack): List[RodUpgrade] =
+    getUpgrades(is, GameRegistry.findRegistry(classOf[RodUpgrade]))
+
+  def getCapUpgrades(is: ItemStack): List[CapUpgrade] =
+    getUpgrades(is, GameRegistry.findRegistry(classOf[CapUpgrade]))
+
+  private def getUpgrades[A<:WandUpgrade[A]](is: ItemStack, registry: IForgeRegistry[A]) = {
     Nbt(is)
-      .getTagList(wandUpgradesKey, 8)
+      .getTagList(wandRodUpgradesKey, 8)
       .iterator()
       .asScala
       .collect { case tag: NBTTagString => tag.getString }
       .map(new ResourceLocation(_))
-      .map(GameRegistry.findRegistry(classOf[WandUpgrade]).getValue)
+      .map(registry.getValue)
       .toList
+  }
 
 
   override def onUpdate(is: ItemStack, w: World, e: Entity, slot: Int, currentItem: Boolean): Unit = {
     e match {
       case player: EntityPlayer =>
         getRod(is).onUpdate(is, player)
-        getUpgrades(is).foreach(_.onUpdate(is, player))
+        getRodUpgrades(is).foreach(_.onUpdate(is, player))
       case _ =>
     }
   }
@@ -45,7 +53,7 @@ abstract class Wand(i: String) extends ItemCaster(i, 0) with IRechargable {
     val playerDiscount = if (player != null) CasterManager.getTotalVisDiscount(player) else 0
 
     val wandDiscount =
-      (getCap(is).discount + (if (crafting) 0 else getUpgrades(is).map(_.additionDiscount(is, player, crafting)).sum)) / 100
+      (getCap(is).discount + (if (crafting) 0 else getCapUpgrades(is).map(_.additionDiscount(is, player, crafting)).sum)) / 100
 
     Math.max(1 - (wandDiscount + playerDiscount), 0.1F)
   }
@@ -60,7 +68,7 @@ abstract class Wand(i: String) extends ItemCaster(i, 0) with IRechargable {
     } else false
   }
 
-  def getMaxVis(itemStack: ItemStack): Int = getRod(itemStack).capacity + getUpgrades(itemStack).map(_.additionCapacity).sum
+  def getMaxVis(itemStack: ItemStack): Int = getRod(itemStack).capacity + getRodUpgrades(itemStack).map(_.additionCapacity).sum
 
   def setVis(itemStack: ItemStack, amount: Float): Unit
 
@@ -95,9 +103,11 @@ abstract class Wand(i: String) extends ItemCaster(i, 0) with IRechargable {
 }
 
 object Wand {
-  val wandUpgradesKey = "wandUpgrades"
+  val wandRodUpgradesKey = "rodUpgrades"
+  val wandCapUpgradesKey = "capUpgrades"
   val wandCapKey = "cap"
   val wandRodKey = "rod"
+  val isScepterKey = "isScepter"
 
   def wand[A](itemStack: ItemStack)(action: Wand => A, orElse: => A = null) = itemStack.getItem match {
     case wand: Wand => action(wand)

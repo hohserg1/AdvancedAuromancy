@@ -22,6 +22,7 @@ object Nbt {
       case v: Long => new NBTTagLong(v)
       case v: Short => new NBTTagShort(v)
       case v: Byte => new NBTTagByte(v)
+      case v: Boolean => new NBTTagByte(if (v) 1 else 0)
       case v: Seq[Int] if v.nonEmpty && v.head.isInstanceOf[Int] => new NBTTagIntArray(v.toArray)
       case v: Seq[Long] if v.nonEmpty && v.head.isInstanceOf[Long] => new NBTTagLongArray(v.toArray)
       case v: Seq[_] => fromIterable(v)

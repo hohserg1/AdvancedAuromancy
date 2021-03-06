@@ -21,7 +21,7 @@ import net.minecraft.world.World
 import net.minecraftforge.items.ItemStackHandler
 import thaumcraft.api.aspects.Aspect
 import thaumcraft.client.fx.FXDispatcher
-import thaumcraft.common.items.casters.ItemCaster
+import thaumcraft.common.items.casters.{ItemCaster, ItemFocus}
 import thaumcraft.common.lib.events.ServerEvents
 
 object BlockWandBuilder extends BlockContainer(Material.ROCK) with DropOnBreak {
@@ -35,7 +35,7 @@ object BlockWandBuilder extends BlockContainer(Material.ROCK) with DropOnBreak {
         .foreach(tile =>
           if (!tile.inv.lock)
             playerIn.getHeldItem(hand).getItem match {
-              case caster: ItemCaster => tile.craft(playerIn, caster)
+              case caster: ItemCaster => tile.craftWand(playerIn, caster, playerIn.getHeldItem(hand))
               case item =>
                 if (!tile.tryInsertItemStack(playerIn.getHeldItem(hand), hitX, hitY, hitZ))
                   playerIn.openGui(Main, 0, worldIn, pos.getX, pos.getY, pos.getZ)
@@ -48,15 +48,120 @@ object BlockWandBuilder extends BlockContainer(Material.ROCK) with DropOnBreak {
   override def createNewTileEntity(worldIn: World, meta: Int): TileEntity = new TileWandBuilder
 
 
-  lazy val craftMatrix: Vector[Vector[Option[(ComponentByStack[_], Int)]]] = Vector(
-    Vector(None, None, None, Some((upgradeByStack, 13)), Some((upgradeByStack, 12))),
-    Vector(None, None, Some((upgradeByStack, 4)), Some((capByStack, 1)), Some((upgradeByStack, 11))),
-    Vector(None, Some((upgradeByStack, 5)), Some((rodByStack, 0)), Some((upgradeByStack, 6)), None),
-    Vector(Some((upgradeByStack, 10)), Some((capByStack, 2)), Some((upgradeByStack, 7)), None, None),
-    Vector(Some((upgradeByStack, 8)), Some((upgradeByStack, 9)), None, None, None)
-  )
+  lazy val craftMatrix: Vector[Vector[Option[(ItemStack => Boolean, Int)]]] = {
+    def rodUpg(v: Int) = Some((rodUpgradeByStack.andThen(_.isDefined), v))
+
+    def capUpg(v: Int) = Some((capUpgradeByStack.andThen(_.isDefined), v))
+
+    def cap(v: Int) = Some((capByStack.andThen(_.isDefined), v))
+
+    def capOrCharm(v: Int) = Some(((is: ItemStack) => capByStack(is).isDefined || is.getItem == PrimalCharm, v))
+
+    def rodUpgOrCap(v: Int) = Some(((is: ItemStack) => rodUpgradeByStack(is).isDefined || capByStack(is).isDefined, v))
+
+    def capUpgOrFocus(v: Int) = Some(((is: ItemStack) => capUpgradeByStack(is).isDefined || is.getItem.isInstanceOf[ItemFocus], v))
+
+    def rod(v: Int) = Some((rodByStack.andThen(_.isDefined), v))
+
+    val ___ = None
+
+    //@formatter:off
+    Vector(
+      Vector(___,         ___,        ___,              capUpg(13),       capUpgOrFocus(12)),
+      Vector(___,         ___,        rodUpgOrCap(4),   capOrCharm(1),    capUpg(11)),
+      Vector(___,         rodUpg(5),  rod(0),           rodUpgOrCap(6),   ___),
+      Vector(capUpg(10), cap(2),      rodUpg(7),        ___,              ___),
+      Vector(capUpg(8),  capUpg(9),   ___,              ___,              ___)
+    )
+    //@formatter:on
+  }
+
 
   lazy val checkSlot = craftMatrix.flatten.flatten.map { case (check, slot) => slot -> check }.toMap
+
+  trait WandRecipe {
+    def getResult(inv: Int => ItemStack): Option[CraftingResult]
+  }
+
+  object RegularWandRecipe extends WandRecipe {
+    override def getResult(inv: Int => ItemStack): Option[CraftingResult] =
+      for {
+        rod <- rodByStack(inv(0))
+        cap1 <- capByStack(inv(1))
+        cap2 <- capByStack(inv(2))
+        if cap1 == cap2
+
+        rodUpgrades =
+        for {
+          i <- 4 to 7
+          stack = inv(i)
+          if !stack.isEmpty
+        } yield rodUpgradeByStack(stack)
+        if rodUpgrades.forall(_.isDefined)
+
+        capUpgrades =
+        for {
+          i <- 8 to 13
+          stack = inv(i)
+          if !stack.isEmpty
+        } yield capUpgradeByStack(stack)
+        if capUpgrades.forall(_.isDefined)
+
+
+      } yield {
+        val fullUpgrades = (rodUpgrades ++ capUpgrades).flatten
+        val nbt = Map(wandCapKey -> cap1.name, wandRodKey -> rod.name, wandCapUpgradesKey -> capUpgrades.flatten.map(_.name), wandRodUpgradesKey -> rodUpgrades.flatten.map(_.name))
+        val r = new ItemStack(ItemWandCasting)
+        r.setTagCompound(Nbt.fromMap(nbt))
+        CraftingResult(r, rod.craftCost + cap1.craftCost + fullUpgrades.map(_.craftCost).sum)
+      }
+  }
+
+  object ScepterRecipe extends WandRecipe {
+    override def getResult(inv: Int => ItemStack): Option[CraftingResult] =
+
+      for {
+        rod <- rodByStack(inv(0))
+        if inv(1).getItem == PrimalCharm
+        cap1 <- capByStack(inv(2))
+        cap2 <- capByStack(inv(4))
+        cap3 <- capByStack(inv(6))
+        if cap1 == cap2 && cap1 == cap3
+
+        rodUpgrades =
+        for {
+          i <- Seq(5, 7)
+          stack = inv(i)
+          if !stack.isEmpty
+        } yield rodUpgradeByStack(stack)
+        if rodUpgrades.forall(_.isDefined)
+
+        capUpgrades =
+        for {
+          i <- 8 to 13
+          if i != 12
+          stack = inv(i)
+          if !stack.isEmpty
+        } yield capUpgradeByStack(stack)
+        if capUpgrades.forall(_.isDefined)
+
+        capUpgradeOrFocusStack = inv(12)
+        isFocus = capUpgradeOrFocusStack.getItem.isInstanceOf[ItemFocus]
+        mayBeUpgrade = capUpgradeByStack(capUpgradeOrFocusStack)
+        if capUpgradeOrFocusStack.isEmpty || isFocus || mayBeUpgrade.isDefined
+
+      } yield {
+        val fullUpgrades = (rodUpgrades ++ capUpgrades).flatten ++ mayBeUpgrade
+        val nbt = Map(isScepterKey -> true, wandCapKey -> cap1.name, wandRodKey -> rod.name, wandCapUpgradesKey -> (capUpgrades.flatten.map(_.name) ++ mayBeUpgrade), wandRodUpgradesKey -> rodUpgrades.flatten.map(_.name))
+        val r = new ItemStack(ItemWandCasting)
+        r.setTagCompound(Nbt.fromMap(nbt))
+        if (isFocus)
+          ItemWandCasting.setFocus(r, capUpgradeOrFocusStack)
+        CraftingResult(r, rod.craftCost + cap1.craftCost + fullUpgrades.map(_.craftCost).sum)
+      }
+  }
+
+  case class CraftingResult(wand: ItemStack, visRequired: Float)
 
   class TileWandBuilder extends BaseInventoryTile(14) {
 
@@ -66,7 +171,7 @@ object BlockWandBuilder extends BlockContainer(Material.ROCK) with DropOnBreak {
       override def baseInventoryTile: BaseInventoryTile = TileWandBuilder.this
 
       override def isItemValid(slot: Int, stack: ItemStack): Boolean =
-        checkSlot.get(slot).exists(_ (stack).isDefined)
+        checkSlot.get(slot).exists(_ (stack))
     }
 
     def tryInsertItemStack(stack: ItemStack, hitX: Float, hitY: Float, hitZ: Float): Boolean = {
@@ -80,7 +185,7 @@ object BlockWandBuilder extends BlockContainer(Material.ROCK) with DropOnBreak {
         val x = math.min((rHitX / 0.2).toInt, 4)
         val z = math.min((rHitZ / 0.2).toInt, 4)
         craftMatrix(x)(z)
-          .filter(_._1(stack).nonEmpty)
+          .filter(_._1(stack))
           .map(_._2)
           .exists { slotIndex =>
             if (inv.getStackInSlot(slotIndex).isEmpty) {
@@ -110,34 +215,24 @@ object BlockWandBuilder extends BlockContainer(Material.ROCK) with DropOnBreak {
 
     def resultSlot: ItemStack = inv.getStackInSlot(3)
 
-    def craft(playerIn: EntityPlayer, tool: ItemCaster): Unit = {
+
+    def craftWand(playerIn: EntityPlayer, tool: ItemCaster, toolStack: ItemStack): Unit = {
       val item = inv.getStackInSlot _
       if (resultSlot.isEmpty) {
-        val upgrades = {
-          for {
-            i <- 4 to 8
-            stack = item(i)
-            if !stack.isEmpty
-          } yield
-            upgradeByStack(stack).map(_ -> i)
-        }.flatten
-
-        craftRodAndCaps(rodSlot, capSlot, upgrades.map(_._1), playerIn)
-          .foreach { wand =>
+        RegularWandRecipe.getResult(item).orElse(ScepterRecipe.getResult(item))
+          .foreach { case CraftingResult(wand, visRequired) =>
             inv.lock = true
             world.addBlockEvent(pos, getBlockType, 5, 1)
+            tool.consumeVis(toolStack, playerIn, visRequired, true, false)
 
 
             ServerEvents.addRunnableServer(world, new Runnable {
               override def run(): Unit = {
                 inv.lock = false
 
-                println("test")
-                for {i <- upgrades}
-                  inv.extractItem(i._2, 1, simulate = false)
-
-                for {i <- 0 to 2}
+                for {i <- (0 to 2) ++ (4 to 13)}
                   inv.extractItem(i, 1, simulate = false)
+
                 inv.setStackInSlot(3, wand)
               }
             }, 20 * 2)
@@ -165,22 +260,6 @@ object BlockWandBuilder extends BlockContainer(Material.ROCK) with DropOnBreak {
         }
         true
       } else false
-
-    def craftRodAndCaps(rodStack: ItemStack, capStack: ItemStack, upgrades: Seq[WandUpgrade], playerIn: EntityPlayer): Option[ItemStack] = {
-      capByStack(capStack).flatMap { cap =>
-        rodByStack(rodStack).map { rod =>
-          val data = Map(wandCapKey -> cap.name, wandRodKey -> rod.name, wandUpgradesKey -> upgrades.map(_.name))
-          if (cap == EnderCap)
-            (data + (enderKeyTag -> playerIn.getName)) -> ItemEnderWandCasting
-          else
-            data -> ItemWandCasting
-        }
-      }.map { case (data, wand) =>
-        val r = new ItemStack(wand)
-        r.setTagCompound(Nbt.fromMap(data))
-        r
-      }
-    }
   }
 
   setDefaultState(blockState.getBaseState.withProperty(FACING, EnumFacing.NORTH))

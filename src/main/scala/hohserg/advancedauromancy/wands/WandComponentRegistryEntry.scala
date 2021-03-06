@@ -7,6 +7,7 @@ abstract class WandComponentRegistryEntry[A <: WandComponentRegistryEntry[A]] ex
   def name = getRegistryName.toString
 
   protected def _name: String
+  def craftCost: Int
 
   setRegistryName(_name)
 

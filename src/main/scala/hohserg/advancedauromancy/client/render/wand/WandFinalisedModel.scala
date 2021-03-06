@@ -29,7 +29,7 @@ class WandFinalisedModel(val parentModel: IBakedModel) extends BaseFinalisedMode
 
   def focusColor: Option[Int] = wand.getFocusOption(itemStack).flatMap(focus => wand.getFocusStackOption(itemStack).map(focus.getFocusColor))
 
-  def upgrades: List[WandUpgrade] = wand.getUpgrades(itemStack)
+  def upgrades: List[WandUpgrade[_]] = wand.getRodUpgrades(itemStack)++wand.getCapUpgrades(itemStack)
 
   override def getQuads(state: IBlockState, side: EnumFacing, rand: Long): util.List[BakedQuad] = {
     if (side == null && isDefined) {

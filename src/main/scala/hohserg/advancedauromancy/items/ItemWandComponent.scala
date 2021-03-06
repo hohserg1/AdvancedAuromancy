@@ -6,7 +6,7 @@ import hohserg.advancedauromancy.client.ClientEventHandler
 import hohserg.advancedauromancy.client.render.simpleItem.SimpleTexturedModelProvider
 import hohserg.advancedauromancy.core.Main
 import hohserg.advancedauromancy.nbt.Nbt
-import hohserg.advancedauromancy.wands.{WandCap, WandComponentRegistryEntry, WandRod, WandUpgrade}
+import hohserg.advancedauromancy.wands.{WandCap, WandComponentRegistryEntry, WandRod, RodUpgrade}
 import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.creativetab.CreativeTabs
 import net.minecraft.item.{Item, ItemStack}
@@ -45,7 +45,7 @@ object ItemWandComponent extends Item with SimpleTexturedModelProvider {
     if (tab == Main.proxy.tab) {
       (GameRegistry.findRegistry(classOf[WandCap]).getKeys.asScala ++
         GameRegistry.findRegistry(classOf[WandRod]).getKeys.asScala ++
-        GameRegistry.findRegistry(classOf[WandUpgrade]).getKeys.asScala
+        GameRegistry.findRegistry(classOf[RodUpgrade]).getKeys.asScala
         ).foreach(key => {
         val stack = new ItemStack(this)
         Nbt(stack).setString(componentNameTag, key.toString)

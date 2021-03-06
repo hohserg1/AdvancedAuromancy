@@ -47,7 +47,7 @@ class ClientEventHandler extends GuiScreen {
         e.getToolTip.set(e.getToolTip.asScala.indexWhere((param: String) => param.contains(visChargeLabel)), TextFormatting.YELLOW + visChargeLabel + " " + getVisForShow(stack, wand))
         e.getToolTip.add(TextFormatting.WHITE + "Average crafting vis cost is " + wand.getConsumptionModifier(stack, e.getEntityPlayer, crafting = true))
         e.getToolTip.add(TextFormatting.WHITE + "Average casting vis cost is " + wand.getConsumptionModifier(stack, e.getEntityPlayer, crafting = false))
-        val upgrades = wand.getUpgrades(stack)
+        val upgrades = wand.getCapUpgrades(stack)++wand.getRodUpgrades(stack)
         if (GuiScreen.isShiftKeyDown) {
           e.getToolTip.add(TextFormatting.GREEN + "Upgrades:")
           upgrades.view.map(u => TextFormatting.GREEN + "          " + I18n.translateToLocal(u.name)).foreach(e.getToolTip.add)

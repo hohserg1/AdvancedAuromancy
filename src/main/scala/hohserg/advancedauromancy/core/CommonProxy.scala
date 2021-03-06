@@ -1,5 +1,6 @@
 package hohserg.advancedauromancy.core
 
+import baubles.api.BaublesApi
 import codechicken.lib.packet.PacketCustom
 import hohserg.advancedauromancy.blocks.BlockWandBuilder.TileWandBuilder
 import hohserg.advancedauromancy.blocks.{BlockOverchargePedestal, BlockWandBuilder}
@@ -13,8 +14,7 @@ import hohserg.advancedauromancy.items.base.Wand
 import hohserg.advancedauromancy.network.ServerPacketHandler
 import hohserg.advancedauromancy.wands.RodsAndCaps._
 import hohserg.advancedauromancy.wands.WandRod.{apply => _, _}
-import hohserg.advancedauromancy.wands.WandUpgrade._
-import hohserg.advancedauromancy.wands.{WandCap, WandRod, WandUpgrade}
+import hohserg.advancedauromancy.wands.{CapUpgrade, RodUpgrade, WandCap, WandRod}
 import net.minecraft.block.{Block, ITileEntityProvider}
 import net.minecraft.creativetab.CreativeTabs
 import net.minecraft.entity.player.EntityPlayer
@@ -35,6 +35,7 @@ import thaumcraft.api.aspects.Aspect._
 import thaumcraft.api.aspects.{Aspect, AspectList}
 import thaumcraft.api.casters.FocusEngine
 import thaumcraft.api.crafting.IDustTrigger
+import thaumcraft.api.items.{IRechargable, RechargeHelper}
 import thaumcraft.api.research.ResearchCategories
 import thaumcraft.common.items.casters.ItemFocus
 import thaumcraft.common.world.aura.AuraHandler
@@ -49,7 +50,7 @@ abstract class CommonProxy extends IGuiHandler {
 
 
   protected val blocksToRegister = ListBuffer[Block](BlockWandBuilder, BlockOverchargePedestal)
-  protected val itemsToRegister = ListBuffer[Item](ItemWandCasting, ItemEnderWandCasting, ItemWandComponent, simpletexturemodel)
+  protected val itemsToRegister = ListBuffer[Item](ItemWandCasting, ItemEnderWandCasting, GoldPlate, PrimalCharm, ItemWandComponent, simpletexturemodel)
   protected val tilesToRegister = ListBuffer[Class[_ <: TileEntity]]()
   protected val entityToRegister = ListBuffer[EntityEntry]()
 
@@ -128,10 +129,9 @@ abstract class CommonProxy extends IGuiHandler {
     ItemWandComponent.loadTexturesFor(e.getRegistry)
   }
 
-  @SubscribeEvent def registerWandUpgrade(e: RegistryEvent.Register[WandUpgrade]): Unit = {
+  @SubscribeEvent def registerCapUpgrade(e: RegistryEvent.Register[CapUpgrade]): Unit = {
     def elementalPlatingOf(aspect: Aspect) = {
-      WandUpgrade("elemental_plating_" + aspect.getTag,
-        0,
+      CapUpgrade("elemental_plating_" + aspect.getTag,
         (stack, player, crafting) => {
           if (crafting)
             0
@@ -146,6 +146,7 @@ abstract class CommonProxy extends IGuiHandler {
       )()
     }
 
+
     e.getRegistry.registerAll(
       elementalPlatingOf(AIR),
       elementalPlatingOf(EARTH),
@@ -153,19 +154,56 @@ abstract class CommonProxy extends IGuiHandler {
       elementalPlatingOf(ORDER),
       elementalPlatingOf(FIRE),
       elementalPlatingOf(COLD),
-      WandUpgrade("capacity_intercalation", 50, identityDiscount, 100, identityOnUpdate)(),
-      WandUpgrade("vis_absorption", 0, identityDiscount, 100, (stack, player) =>
+      DefaultCapUpgrade
+    )
+  }
+
+  @SubscribeEvent def registerRodUpgrade(e: RegistryEvent.Register[RodUpgrade]): Unit = {
+
+    def itemsView(size: Int, stackByIndex: Int => ItemStack) =
+      (0 until size) map stackByIndex
+
+
+    e.getRegistry.registerAll(
+      RodUpgrade("capacity_intercalation", 50, 100, identityOnUpdate)(),
+      RodUpgrade("vis_absorption", 0, 100, (stack, player) =>
         if (player.world.rand.nextInt(100) == 0)
-          stack.getItem match {
-            case wand: Wand => wand.addVis(stack, AuraHandler.drainVis(player.world, player.getPosition, 1, false))
-            case _ =>
+          Wand.wand(stack) {
+            wand => wand.addVis(stack, AuraHandler.drainVis(player.world, player.getPosition, 1, false))
+          }
+      )(),
+      RodUpgrade("inventory_charger", 0, 100, (stack, player) =>
+        if (!player.world.isRemote && player.ticksExisted % 40 == 0)
+          Wand.wand(stack) {
+            wand =>
+              if (wand.getVis(stack) >= 1) {
+                val baubles = BaublesApi.getBaublesHandler(player)
+                val armor = player.inventory.armorInventory
+                val itemsToCharge =
+                  itemsView(player.inventory.getSizeInventory, player.inventory.getStackInSlot) ++
+                    itemsView(baubles.getSlots, baubles.getStackInSlot) ++
+                    itemsView(armor.size(), armor.get)
+
+                val canBeChargered = itemsToCharge
+                  .map(i => i -> i.getItem)
+                  .collectFirst { case (itemStack, item: IRechargable) if itemStack != stack && item.getMaxCharge(itemStack, player) - RechargeHelper.getCharge(itemStack) >= 1 =>
+                    itemStack
+                  }
+
+                canBeChargered.foreach { i =>
+                  val chargered = RechargeHelper.rechargeItemBlindly(i, player, 1)
+                  wand.setVis(stack, wand.getVis(stack) - chargered)
+                }
+              }
           }
       )(),
       ChargeIndicator,
-      DefaultUpgrade
+      DefaultRodUpgrade
     )
     ItemWandComponent.loadTexturesFor(e.getRegistry)
   }
+
+  val f = true
 
   @SubscribeEvent def registerEntities(e: RegistryEvent.Register[EntityEntry]): Unit = {
     entityToRegister.foreach(e.getRegistry.register)

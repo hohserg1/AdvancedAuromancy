@@ -5,7 +5,6 @@ import hohserg.advancedauromancy.core.Main.advancedAuromancyModId
 import hohserg.advancedauromancy.items.ItemWandComponent
 import hohserg.advancedauromancy.items.base.Wand
 import hohserg.advancedauromancy.wands.WandRod.identityOnUpdate
-import hohserg.advancedauromancy.wands.WandUpgrade.identityDiscount
 import net.minecraft.client.Minecraft
 import net.minecraft.item.ItemStack
 import net.minecraft.util.ResourceLocation
@@ -22,7 +21,11 @@ object RodsAndCaps {
     override def isDefault = true
   }
 
-  object DefaultUpgrade extends WandUpgrade("default_upgrade", 0, identityDiscount, 0, identityOnUpdate)() {
+  object DefaultRodUpgrade extends RodUpgrade("default_upgrade", 0, 0, identityOnUpdate)() {
+    override def isDefault = true
+  }
+
+  object DefaultCapUpgrade extends CapUpgrade("default_upgrade", CapUpgrade.identityDiscount, 0, identityOnUpdate)() {
     override def isDefault = true
   }
 
@@ -33,7 +36,8 @@ object RodsAndCaps {
 
   lazy val capByStack: ComponentByStack[WandCap] = getByRegistry(GameRegistry.findRegistry(classOf[WandCap]))
   lazy val rodByStack: ComponentByStack[WandRod] = getByRegistry(GameRegistry.findRegistry(classOf[WandRod]))
-  lazy val upgradeByStack: ComponentByStack[WandUpgrade] = getByRegistry(GameRegistry.findRegistry(classOf[WandUpgrade]))
+  lazy val rodUpgradeByStack: ComponentByStack[RodUpgrade] = getByRegistry(GameRegistry.findRegistry(classOf[RodUpgrade]))
+  lazy val capUpgradeByStack: ComponentByStack[CapUpgrade] = getByRegistry(GameRegistry.findRegistry(classOf[CapUpgrade]))
 
   object GoldCap extends WandCap("gold_cap", 30, 100)()
 
@@ -59,7 +63,7 @@ object RodsAndCaps {
 
   object JungleRod extends WandRod("jungle_rod", 100, 0, identityOnUpdate)()
 
-  object ChargeIndicator extends WandUpgrade("charge_indicator", 0, identityDiscount, 10, identityOnUpdate,
+  object ChargeIndicator extends RodUpgrade("charge_indicator", 0, 10, identityOnUpdate,
     stack => quads => {
       val (charge, maxCharge) = Wand.wand[(Float, Int)](stack)({ wand => wand.getVis(stack) -> wand.getMaxVis(stack) }, 0f -> 1)
 
