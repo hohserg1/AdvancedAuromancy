@@ -2,16 +2,16 @@ package hohserg.advancedauromancy.blocks
 
 import hohserg.advancedauromancy.blocks.BaseInventoryTile.{LockableItemStackHandler, SyncItemStackHandler}
 import hohserg.advancedauromancy.core.Main
-import hohserg.advancedauromancy.items.ItemEnderWandCasting.enderKeyTag
 import hohserg.advancedauromancy.items.base.Wand._
-import hohserg.advancedauromancy.items.{ItemEnderWandCasting, ItemWandCasting}
+import hohserg.advancedauromancy.items.{ItemWandCasting, PrimalCharm}
 import hohserg.advancedauromancy.nbt.Nbt
 import hohserg.advancedauromancy.utils.ItemUtils
 import hohserg.advancedauromancy.wands.RodsAndCaps._
-import hohserg.advancedauromancy.wands._
 import net.minecraft.block.BlockContainer
+import net.minecraft.block.BlockHorizontal.FACING
 import net.minecraft.block.material.Material
-import net.minecraft.block.state.IBlockState
+import net.minecraft.block.state.{BlockStateContainer, IBlockState}
+import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.tileentity.TileEntity
@@ -71,8 +71,14 @@ object BlockWandBuilder extends BlockContainer(Material.ROCK) with DropOnBreak {
 
     def tryInsertItemStack(stack: ItemStack, hitX: Float, hitY: Float, hitZ: Float): Boolean = {
       if (hitY == 1 && resultSlot.isEmpty) {
-        val x = math.min((hitX / 0.2).toInt, 4)
-        val z = math.min((hitZ / 0.2).toInt, 4)
+
+        val facingAngle = -math.toRadians(world.getBlockState(pos).getValue(FACING).getHorizontalAngle)
+
+        val rHitX = 1-(0.5 + (hitX - 0.5) * math.cos(facingAngle) - (hitZ - 0.5) * math.sin(facingAngle))
+        val rHitZ = 1-(0.5 + (hitZ - 0.5) * math.cos(facingAngle) + (hitX - 0.5) * math.sin(facingAngle))
+
+        val x = math.min((rHitX / 0.2).toInt, 4)
+        val z = math.min((rHitZ / 0.2).toInt, 4)
         craftMatrix(x)(z)
           .filter(_._1(stack).nonEmpty)
           .map(_._2)
@@ -176,5 +182,19 @@ object BlockWandBuilder extends BlockContainer(Material.ROCK) with DropOnBreak {
       }
     }
   }
+
+  setDefaultState(blockState.getBaseState.withProperty(FACING, EnumFacing.NORTH))
+
+  override def createBlockState(): BlockStateContainer = new BlockStateContainer(this, FACING)
+
+  override def getMetaFromState(state: IBlockState): Int = state.getValue(FACING).ordinal()
+
+  override def getStateFromMeta(meta: Int): IBlockState = getDefaultState.withProperty(FACING, EnumFacing.values()(meta))
+
+  override def getStateForPlacement(worldIn: World, pos: BlockPos, facing: EnumFacing, hitX: Float, hitY: Float, hitZ: Float, meta: Int, placer: EntityLivingBase): IBlockState =
+    getDefaultState.withProperty(FACING, placer.getHorizontalFacing)
+
+  override def onBlockPlacedBy(worldIn: World, pos: BlockPos, state: IBlockState, placer: EntityLivingBase, stack: ItemStack): Unit =
+    worldIn.setBlockState(pos, state.withProperty(FACING, placer.getHorizontalFacing), 2)
 
 }
