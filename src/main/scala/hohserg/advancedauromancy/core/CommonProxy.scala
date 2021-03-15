@@ -100,8 +100,8 @@ abstract class CommonProxy extends IGuiHandler {
   }
 
   def addThaumcraftPacketHandler(): Unit = {
-    val packetCodec = getPrivateField[SimpleIndexedCodec](PacketHandler.INSTANCE, "packetCodec")
-    val types = getPrivateField[Object2ByteMap[Class[_ <: IMessage]]](packetCodec, "types")
+    val packetCodec = getPrivateField[SimpleNetworkWrapper, SimpleIndexedCodec](PacketHandler.INSTANCE, "packetCodec")
+    val types = getPrivateField[FMLIndexedMessageToMessageCodec[IMessage], Object2ByteMap[Class[_ <: IMessage]]](packetCodec, "types")
     val id = types.get(classOf[PacketStartTheoryToServer])
 
     PacketHandler.INSTANCE.registerMessage[PacketStartTheoryToServer, IMessage](
