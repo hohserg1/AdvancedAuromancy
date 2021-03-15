@@ -51,7 +51,7 @@ abstract class CommonProxy extends IGuiHandler {
 
 
   protected val blocksToRegister = ListBuffer[Block](BlockWandBuilder, BlockOverchargePedestal)
-  protected val itemsToRegister = ListBuffer[Item](ItemWandCasting, ItemEnderWandCasting, GoldPlate, ImprovedCharm, ItemWandComponent, simpletexturemodel)
+  protected val itemsToRegister = ListBuffer[Item](ItemWandCasting, ItemEnderWandCasting, GoldPlate, ImprovedCharm, HonedCharm, ItemWandComponent.ItemCap, ItemWandComponent.ItemRod, ItemWandComponent.ItemCapUpgrade, ItemWandComponent.ItemRodUpgrade, simpletexturemodel)
   protected val tilesToRegister = ListBuffer[Class[_ <: TileEntity]]()
   protected val entityToRegister = ListBuffer[EntityEntry]()
 
@@ -215,12 +215,14 @@ abstract class CommonProxy extends IGuiHandler {
     IDustTrigger.registerDustTrigger(new WandBuilderCraft)
   }
 
+  lazy val thaumonomiconCategory = ResearchCategories.registerCategory(advancedAuromancyModId.toUpperCase, "FLUX",
+    new AspectList().add(AURA, 1).add(CRAFT, 1).add(MAGIC, 1),
+    new ResourceLocation(advancedAuromancyModId, "textures/icon.png"),
+    new ResourceLocation(advancedAuromancyModId, "textures/background.png")
+  )
+
   def postinit(event: FMLPostInitializationEvent): Unit = {
-    ResearchCategories.registerCategory(advancedAuromancyModId.toUpperCase, "FLUX",
-      new AspectList().add(AURA, 1).add(CRAFT, 1).add(MAGIC, 1),
-      new ResourceLocation(advancedAuromancyModId, "textures/icon.png"),
-      new ResourceLocation(advancedAuromancyModId, "textures/background.png")
-    )
+    println(thaumonomiconCategory)
     ThaumcraftApi.registerResearchLocation(new ResourceLocation(advancedAuromancyModId, "research/research.json"))
   }
 
