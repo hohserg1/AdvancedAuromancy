@@ -135,7 +135,6 @@ class ClientEventHandler extends GuiScreen {
 
   @SubscribeEvent
   def onMainMenu(event: GuiOpenEvent): Unit = if (!alreadyEnteredInWorldAutomaticaly) {
-    System.out.println(event.getGui)
     val mc = Minecraft.getMinecraft
     event.getGui match {
       case menu: GuiMainMenu =>
