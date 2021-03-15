@@ -1,12 +1,9 @@
 package hohserg.advancedauromancy.utils
 
-import scala.reflect.ClassTag
-
 object ReflectionUtils {
-  def getPrivateField[CL: ClassTag, A](value: CL, field: String): A = {
-    val f = implicitly[ClassTag[CL]].runtimeClass.getDeclaredField(field)
+  def getPrivateField[A](value: Any, field: String): A = {
+    val f = value.getClass.getDeclaredField(field)
     f.setAccessible(true)
     f.get(value).asInstanceOf[A]
   }
-
 }

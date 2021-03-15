@@ -31,7 +31,7 @@ object ResearchEventHandler {
       val playServer = ctx.netHandler.asInstanceOf[NetHandlerPlayServer]
       val player = playServer.player
       val world = playServer.player.getServerWorld
-      val bp = BlockPos.fromLong(getPrivateField[PacketStartTheoryToServer, Long](message, "pos"))
+      val bp = BlockPos.fromLong(getPrivateField[Long](message, "pos"))
       world.addScheduledTask(new Runnable() {
         override def run(): Unit = {
           addBlockedCategoryToResearchTable(world.getTileEntity(bp))
