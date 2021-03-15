@@ -11,7 +11,7 @@ import hohserg.advancedauromancy.foci.FocusMediumOrb
 import hohserg.advancedauromancy.inventory.{ContainerWandBuilder, GuiWandBuilder}
 import hohserg.advancedauromancy.items._
 import hohserg.advancedauromancy.items.base.Wand
-import hohserg.advancedauromancy.items.charms.ImprovedCharm
+import hohserg.advancedauromancy.items.charms.{HonedCharm, ImprovedCharm}
 import hohserg.advancedauromancy.network.ServerPacketHandler
 import hohserg.advancedauromancy.research.ResearchEventHandler
 import hohserg.advancedauromancy.utils.ReflectionUtils._
@@ -33,7 +33,7 @@ import net.minecraftforge.event.RegistryEvent
 import net.minecraftforge.fml.common.event.{FMLInitializationEvent, FMLPostInitializationEvent, FMLPreInitializationEvent}
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.common.network.simpleimpl._
-import net.minecraftforge.fml.common.network.{FMLIndexedMessageToMessageCodec, IGuiHandler, NetworkRegistry}
+import net.minecraftforge.fml.common.network.{IGuiHandler, NetworkRegistry}
 import net.minecraftforge.fml.common.registry.{EntityEntry, GameRegistry}
 import net.minecraftforge.fml.relauncher.Side
 import thaumcraft.api.ThaumcraftApi
@@ -131,7 +131,7 @@ abstract class CommonProxy extends IGuiHandler {
       EnderCap,
       DefaultCap
     )
-    ItemWandComponent.loadTexturesFor(e.getRegistry)
+    ItemWandComponent.ItemCap.loadTexturesForRegistry()
   }
 
   @SubscribeEvent def registerWandRod(e: RegistryEvent.Register[WandRod]): Unit = {
@@ -146,7 +146,7 @@ abstract class CommonProxy extends IGuiHandler {
       JungleRod,
       DefaultRod
     )
-    ItemWandComponent.loadTexturesFor(e.getRegistry)
+    ItemWandComponent.ItemRod.loadTexturesForRegistry()
   }
 
   @SubscribeEvent def registerCapUpgrade(e: RegistryEvent.Register[CapUpgrade]): Unit = {
@@ -176,6 +176,8 @@ abstract class CommonProxy extends IGuiHandler {
       elementalPlatingOf(COLD),
       DefaultCapUpgrade
     )
+
+    ItemWandComponent.ItemCapUpgrade.loadTexturesForRegistry()
   }
 
   @SubscribeEvent def registerRodUpgrade(e: RegistryEvent.Register[RodUpgrade]): Unit = {
@@ -220,7 +222,8 @@ abstract class CommonProxy extends IGuiHandler {
       ChargeIndicator,
       DefaultRodUpgrade
     )
-    ItemWandComponent.loadTexturesFor(e.getRegistry)
+
+    ItemWandComponent.ItemRodUpgrade.loadTexturesForRegistry()
   }
 
   val f = true
