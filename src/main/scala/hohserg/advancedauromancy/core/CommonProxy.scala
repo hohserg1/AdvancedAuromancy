@@ -13,9 +13,12 @@ import hohserg.advancedauromancy.items._
 import hohserg.advancedauromancy.items.base.Wand
 import hohserg.advancedauromancy.items.charms.ImprovedCharm
 import hohserg.advancedauromancy.network.ServerPacketHandler
+import hohserg.advancedauromancy.research.ResearchEventHandler
+import hohserg.advancedauromancy.utils.ReflectionUtils._
 import hohserg.advancedauromancy.wands.RodsAndCaps._
 import hohserg.advancedauromancy.wands.WandRod.{apply => _, _}
 import hohserg.advancedauromancy.wands.{CapUpgrade, RodUpgrade, WandCap, WandRod}
+import it.unimi.dsi.fastutil.objects.Object2ByteMap
 import net.minecraft.block.{Block, ITileEntityProvider}
 import net.minecraft.creativetab.CreativeTabs
 import net.minecraft.entity.player.EntityPlayer
@@ -29,8 +32,10 @@ import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.RegistryEvent
 import net.minecraftforge.fml.common.event.{FMLInitializationEvent, FMLPostInitializationEvent, FMLPreInitializationEvent}
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
-import net.minecraftforge.fml.common.network.{IGuiHandler, NetworkRegistry}
+import net.minecraftforge.fml.common.network.simpleimpl._
+import net.minecraftforge.fml.common.network.{FMLIndexedMessageToMessageCodec, IGuiHandler, NetworkRegistry}
 import net.minecraftforge.fml.common.registry.{EntityEntry, GameRegistry}
+import net.minecraftforge.fml.relauncher.Side
 import thaumcraft.api.ThaumcraftApi
 import thaumcraft.api.aspects.Aspect._
 import thaumcraft.api.aspects.{Aspect, AspectList}
@@ -39,6 +44,8 @@ import thaumcraft.api.crafting.IDustTrigger
 import thaumcraft.api.items.{IRechargable, RechargeHelper}
 import thaumcraft.api.research.ResearchCategories
 import thaumcraft.common.items.casters.ItemFocus
+import thaumcraft.common.lib.network.PacketHandler
+import thaumcraft.common.lib.network.misc.PacketStartTheoryToServer
 import thaumcraft.common.world.aura.AuraHandler
 
 import scala.collection.mutable.ListBuffer
@@ -88,7 +95,19 @@ abstract class CommonProxy extends IGuiHandler {
     })
 
     NetworkRegistry.INSTANCE.registerGuiHandler(Main, this)
+
+    addThaumcraftPacketHandler()
   }
+
+  def addThaumcraftPacketHandler(): Unit = {
+    val packetCodec = getPrivateField[SimpleNetworkWrapper, SimpleIndexedCodec](PacketHandler.INSTANCE, "packetCodec")
+    val types = getPrivateField[FMLIndexedMessageToMessageCodec[IMessage], Object2ByteMap[Class[_ <: IMessage]]](packetCodec, "types")
+    val id = types.get(classOf[PacketStartTheoryToServer])
+
+    PacketHandler.INSTANCE.registerMessage[PacketStartTheoryToServer, IMessage](
+      new ResearchEventHandler.PacketStartTheoryToServerHandler, classOf[PacketStartTheoryToServer], id.toInt, Side.SERVER)
+  }
+
 
   private def nameByClass(item: Any) = item.getClass.getSimpleName.dropRight(1).toLowerCase
 
