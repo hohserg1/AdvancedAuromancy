@@ -3,6 +3,7 @@ package hohserg.advancedauromancy.client.render.wand
 
 import java.util
 
+import hohserg.advancedauromancy.api.{WandCap, WandRod}
 import hohserg.advancedauromancy.client.render.{BaseFinalisedModel, Cube}
 import hohserg.advancedauromancy.items.base.Wand
 import hohserg.advancedauromancy.wands._
@@ -29,7 +30,7 @@ class WandFinalisedModel(val parentModel: IBakedModel) extends BaseFinalisedMode
 
   def focusColor: Option[Int] = wand.getFocusOption(itemStack).flatMap(focus => wand.getFocusStackOption(itemStack).map(focus.getFocusColor))
 
-  def upgrades: List[WandUpgrade[_]] = wand.getRodUpgrades(itemStack)++wand.getCapUpgrades(itemStack)
+  def upgrades: List[WandComponentRegistryEntry[_]] = wand.getRodUpgrades(itemStack) ++ wand.getCapUpgrades(itemStack)
 
   override def getQuads(state: IBlockState, side: EnumFacing, rand: Long): util.List[BakedQuad] = {
     if (side == null && isDefined) {
@@ -41,8 +42,7 @@ class WandFinalisedModel(val parentModel: IBakedModel) extends BaseFinalisedMode
         WandFinalisedModel.rod(textureRod) ++
         focusColor.map(focusColor => Cube(-3, -6, -3, 6, 6, 6, focusTexture, focusColor).scale(0.1f).move(0, 42, 0).toQuads).getOrElse(Nil)
 
-      val transform = rod.transformQuads(itemStack) andThen cap.transformQuads(itemStack) andThen upgrades.map(_.transformQuads(itemStack)).fold(identity: List[BakedQuad] => List[BakedQuad])(_ andThen _)
-      transform(quads).asJava
+      quads.asJava
     } else
       parentModel.getQuads(state, side, rand)
   }

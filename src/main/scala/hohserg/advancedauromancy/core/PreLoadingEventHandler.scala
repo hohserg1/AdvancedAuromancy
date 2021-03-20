@@ -1,17 +1,17 @@
 package hohserg.advancedauromancy.core
 
+import hohserg.advancedauromancy.api.{CapUpgrade, RodUpgrade, WandCap, WandRod}
 import hohserg.advancedauromancy.core.Main.advancedAuromancyModId
-import hohserg.advancedauromancy.wands.{CapUpgrade, RodUpgrade, WandCap, WandRod}
 import net.minecraft.util.ResourceLocation
 import net.minecraftforge.event.RegistryEvent
 import net.minecraftforge.fml.common.Mod
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
+import net.minecraftforge.fml.common.eventhandler.{EventPriority, SubscribeEvent}
 import net.minecraftforge.registries.RegistryBuilder
 
 @Mod.EventBusSubscriber(modid = Main.advancedAuromancyModId)
 object PreLoadingEventHandler {
 
-  @SubscribeEvent def registerWandRegistry(e: RegistryEvent.NewRegistry): Unit = {
+  @SubscribeEvent(priority = EventPriority.HIGHEST) def registerWandRegistry(e: RegistryEvent.NewRegistry): Unit = {
     new RegistryBuilder()
       .setName(new ResourceLocation(advancedAuromancyModId, "wand_cap"))
       .setType(classOf[WandCap])

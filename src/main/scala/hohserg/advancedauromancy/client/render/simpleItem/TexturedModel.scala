@@ -42,7 +42,7 @@ class TexturedModel(baseModel: IBakedModel) extends IBakedModel {
     private def model(originalModel: IBakedModel, stack: ItemStack) = {
       stack.getItem match {
         case item: SimpleTexturedModelProvider =>
-          val key = item.textureName(stack)
+          val key = item.textureName
           memoization.getOrElseUpdate(key, new TexturedFinalisedModel(originalModel, key))
         case _ => originalModel
       }

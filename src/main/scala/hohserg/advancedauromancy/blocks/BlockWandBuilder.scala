@@ -2,9 +2,9 @@ package hohserg.advancedauromancy.blocks
 
 import hohserg.advancedauromancy.blocks.BaseInventoryTile.{LockableItemStackHandler, SyncItemStackHandler}
 import hohserg.advancedauromancy.core.Main
-import hohserg.advancedauromancy.items.base.Wand._
 import hohserg.advancedauromancy.items.ItemWandCasting
-import hohserg.advancedauromancy.items.charms.ImprovedCharm
+import hohserg.advancedauromancy.items.base.Wand._
+import hohserg.advancedauromancy.items.charms.BaseCharm
 import hohserg.advancedauromancy.nbt.Nbt
 import hohserg.advancedauromancy.utils.ItemUtils
 import hohserg.advancedauromancy.wands.RodsAndCaps._
@@ -56,7 +56,7 @@ object BlockWandBuilder extends BlockContainer(Material.ROCK) with DropOnBreak {
 
     def cap(v: Int) = Some((capByStack.andThen(_.isDefined), v))
 
-    def capOrCharm(v: Int) = Some(((is: ItemStack) => capByStack(is).isDefined || is.getItem == ImprovedCharm, v))
+    def capOrCharm(v: Int) = Some(((is: ItemStack) => capByStack(is).isDefined || is.getItem.isInstanceOf[BaseCharm], v))
 
     def rodUpgOrCap(v: Int) = Some(((is: ItemStack) => rodUpgradeByStack(is).isDefined || capByStack(is).isDefined, v))
 
@@ -123,7 +123,7 @@ object BlockWandBuilder extends BlockContainer(Material.ROCK) with DropOnBreak {
 
       for {
         rod <- rodByStack(inv(0))
-        if inv(1).getItem == ImprovedCharm
+        if inv(1).getItem.isInstanceOf[BaseCharm]
         cap1 <- capByStack(inv(2))
         cap2 <- capByStack(inv(4))
         cap3 <- capByStack(inv(6))
@@ -180,8 +180,8 @@ object BlockWandBuilder extends BlockContainer(Material.ROCK) with DropOnBreak {
 
         val facingAngle = -math.toRadians(world.getBlockState(pos).getValue(FACING).getHorizontalAngle)
 
-        val rHitX = 1-(0.5 + (hitX - 0.5) * math.cos(facingAngle) - (hitZ - 0.5) * math.sin(facingAngle))
-        val rHitZ = 1-(0.5 + (hitZ - 0.5) * math.cos(facingAngle) + (hitX - 0.5) * math.sin(facingAngle))
+        val rHitX = 1 - (0.5 + (hitX - 0.5) * math.cos(facingAngle) - (hitZ - 0.5) * math.sin(facingAngle))
+        val rHitZ = 1 - (0.5 + (hitZ - 0.5) * math.cos(facingAngle) + (hitX - 0.5) * math.sin(facingAngle))
 
         val x = math.min((rHitX / 0.2).toInt, 4)
         val z = math.min((rHitZ / 0.2).toInt, 4)

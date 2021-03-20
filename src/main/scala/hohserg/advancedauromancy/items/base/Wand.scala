@@ -1,7 +1,10 @@
 package hohserg.advancedauromancy.items.base
 
+import hohserg.advancedauromancy.api.{CapUpgrade, RodUpgrade, WandCap, WandRod}
 import hohserg.advancedauromancy.items.base.Wand._
 import hohserg.advancedauromancy.nbt.Nbt
+import hohserg.advancedauromancy.wands.AACaps.DefaultCap
+import hohserg.advancedauromancy.wands.AARods.DefaultRod
 import hohserg.advancedauromancy.wands._
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.entity.{Entity, EntityLivingBase}
@@ -23,14 +26,14 @@ abstract class Wand(i: String) extends ItemCaster(i, 0) with IRechargable {
   ConfigItems.ITEM_VARIANT_HOLDERS.remove(this)
 
   def getRodUpgrades(is: ItemStack): List[RodUpgrade] =
-    getUpgrades(is, GameRegistry.findRegistry(classOf[RodUpgrade]))
+    getUpgrades(is, GameRegistry.findRegistry(classOf[RodUpgrade]), wandRodUpgradesKey)
 
   def getCapUpgrades(is: ItemStack): List[CapUpgrade] =
-    getUpgrades(is, GameRegistry.findRegistry(classOf[CapUpgrade]))
+    getUpgrades(is, GameRegistry.findRegistry(classOf[CapUpgrade]), wandCapUpgradesKey)
 
-  private def getUpgrades[A<:WandUpgrade[A]](is: ItemStack, registry: IForgeRegistry[A]) = {
+  private def getUpgrades[A <: WandComponentRegistryEntry[A]](is: ItemStack, registry: IForgeRegistry[A], key: String): List[A] = {
     Nbt(is)
-      .getTagList(wandRodUpgradesKey, 8)
+      .getTagList(key, 8)
       .iterator()
       .asScala
       .collect { case tag: NBTTagString => tag.getString }
@@ -81,13 +84,13 @@ abstract class Wand(i: String) extends ItemCaster(i, 0) with IRechargable {
 
 
   def getCap(itemStack: ItemStack): WandCap =
-    GameRegistry.findRegistry(classOf[WandCap])
-      .getValue(new ResourceLocation(Nbt(itemStack).getString(wandCapKey)))
+    Option(GameRegistry.findRegistry(classOf[WandCap])
+      .getValue(new ResourceLocation(Nbt(itemStack).getString(wandCapKey)))).getOrElse(DefaultCap)
 
 
   def getRod(itemStack: ItemStack): WandRod =
-    GameRegistry.findRegistry(classOf[WandRod])
-      .getValue(new ResourceLocation(Nbt(itemStack).getString(wandRodKey)))
+    Option(GameRegistry.findRegistry(classOf[WandRod])
+      .getValue(new ResourceLocation(Nbt(itemStack).getString(wandRodKey)))).getOrElse(DefaultRod)
 
   override def onItemRightClick(world: World, player: EntityPlayer, hand: EnumHand): ActionResult[ItemStack] = {
     val r = super.onItemRightClick(world, player, hand)

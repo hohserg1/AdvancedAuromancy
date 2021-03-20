@@ -1,7 +1,0 @@
-{
-  "parent": "item/generated",
-  "textures": {
-    "layer0": "advancedauromancy:items/charm",
-    "layer1": "advancedauromancy:items/charm_gold"
-  }
-}

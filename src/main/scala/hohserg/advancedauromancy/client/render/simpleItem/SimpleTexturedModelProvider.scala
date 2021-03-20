@@ -3,19 +3,22 @@ package hohserg.advancedauromancy.client.render.simpleItem
 import hohserg.advancedauromancy.client.ModelProvider
 import hohserg.advancedauromancy.core.Main
 import net.minecraft.client.renderer.block.model.ModelResourceLocation
-import net.minecraft.item.{Item, ItemStack}
+import net.minecraft.item.Item
 
 trait SimpleTexturedModelProvider extends ModelProvider {
+  this: Item =>
   def location: ModelResourceLocation = SimpleTexturedModelProvider.defaultLocation
 
-  def textureName(itemStack: ItemStack): String
+  def textureName: String = getRegistryName.getResourceDomain + ":items/" + getRegistryName.getResourcePath
 }
 
 object SimpleTexturedModelProvider {
   lazy val defaultLocation: ModelResourceLocation = new ModelResourceLocation(Main.advancedAuromancyModId + ":simpletexturemodel", "inventory")
 
   object simpletexturemodel extends Item with SimpleTexturedModelProvider {
-    override def textureName(itemStack: ItemStack): String = "none"
+    setRegistryName("simpletexturemodel")
+
+    override def textureName: String = "none"
   }
 
 }

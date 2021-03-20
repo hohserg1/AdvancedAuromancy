@@ -5,5 +5,6 @@ import net.minecraft.util.ResourceLocation
 trait TextureRegister {
   def location: ResourceLocation
 
-  ClientEventHandler.registerTexture(location)
+  def registerTexture(): Unit =
+    ClientEventHandler.registerTexture(location)
 }
