@@ -1,9 +1,11 @@
 package hohserg.advancedauromancy.client.render.wand
 
+import hohserg.advancedauromancy.utils.endothermic.quad.immutable.LazyUnpackedQuad
+
 import scala.language.dynamics
 
-case class QuadEntry(quads: Map[String, Quad]) extends Dynamic {
-  def selectDynamic(name: String): Quad = quads(name)
+case class QuadEntry(quads: Map[String, LazyUnpackedQuad]) extends Dynamic {
+  def selectDynamic(name: String): LazyUnpackedQuad = quads(name)
 
-  def +(name: String, v: Quad): QuadEntry = copy(quads + (name -> v))
+  def +(name: String, v: LazyUnpackedQuad): QuadEntry = copy(quads + (name -> v))
 }
